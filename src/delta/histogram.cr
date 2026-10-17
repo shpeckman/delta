@@ -2,6 +2,7 @@
 module Delta
   class Histogram < Algorithm
     MIN_HISTOGRAM = 64
+    MAX_COUNT     = 8
 
     def diff(a : Slice(Int32), b : Slice(Int32)) : Array(Edit)
       edits = [] of Edit
@@ -12,7 +13,7 @@ module Delta
       vb = Slice(Int32).new(2 * bound + 3, 0)
       rec(a, 0, a.size, b, 0, b.size, Myers.new, vf, vb,
         Hash(Int32, Int32).new(0), Hash(Int32, Int32).new(0), edits)
-      normalize(edits)
+      normalize(edits, [] of Edit)
     end
 
     private def rec(a : Slice(Int32), a_lo : Int32, a_hi : Int32,
@@ -75,7 +76,7 @@ module Delta
             end
           end
 
-          if best_tok == -1
+          if best_tok == -1 || best_cnt > MAX_COUNT
             myers.diff_region(a, am, ae, b, bm, be, vf, vb, edits)
           else
             apos = [] of Int32
@@ -91,26 +92,26 @@ module Delta
               j += 1
             end
 
-            pa = am
-            pb = bm
-            ai_idx = 0
-            bi_idx = 0
-            while ai_idx < apos.size && bi_idx < bpos.size
-              x = apos[ai_idx]
-              while bi_idx + 1 < bpos.size &&
-                    ((x - am) - (bpos[bi_idx + 1] - bm)).abs <= ((x - am) - (bpos[bi_idx] - bm)).abs
-                bi_idx += 1
+            ai = apos[0]
+            bi = bpos[0]
+            best_shift = ((apos[0] - am) - (bpos[0] - bm)).abs
+            bidx = 0
+            apos.each do |x|
+              while bidx + 1 < bpos.size &&
+                    ((x - am) - (bpos[bidx + 1] - bm)).abs <= ((x - am) - (bpos[bidx] - bm)).abs
+                bidx += 1
               end
-              ai = x
-              bi = bpos[bi_idx]
-              rec(a, pa, ai, b, pb, bi, myers, vf, vb, counts_a, counts_b, edits)
-              emit(edits, Kind::Equal, ai, 1, bi, 1)
-              pa = ai + 1
-              pb = bi + 1
-              ai_idx += 1
-              bi_idx += 1
+              shift = ((x - am) - (bpos[bidx] - bm)).abs
+              if shift < best_shift
+                best_shift = shift
+                ai = x
+                bi = bpos[bidx]
+              end
             end
-            rec(a, pa, ae, b, pb, be, myers, vf, vb, counts_a, counts_b, edits)
+
+            rec(a, am, ai, b, bm, bi, myers, vf, vb, counts_a, counts_b, edits)
+            emit(edits, Kind::Equal, ai, 1, bi, 1)
+            rec(a, ai + 1, ae, b, bi + 1, be, myers, vf, vb, counts_a, counts_b, edits)
           end
         end
       end
