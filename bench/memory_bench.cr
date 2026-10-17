@@ -30,4 +30,4 @@ ws = Delta::Workspace.new
 Delta.diff_lines(old, new, workspace: ws)
 without_ws = Benchmark.memory { Delta.diff_lines(old, new) }
 with_ws = Benchmark.memory { Delta.diff_lines(old, new, workspace: ws) }
-puts "  myers       without_ws ws %8s   with_ws ws %8s" % {human(without_ws), human(with_ws)}
+puts "  myers       without ws %8s   with ws %8s" % {human(without_ws), human(with_ws)}
