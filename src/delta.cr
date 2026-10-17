@@ -22,8 +22,11 @@ module Delta
     compact ? Compaction.compact(edits, ta, tb, nil) : edits
   end
 
-  def self.diff_lines(old_source : String, new_source : String, algorithm : Algorithm = Myers.new, *, compact : Bool = true) : Array(Edit)
-    la, lb = Tokenizer.lines(old_source, new_source)
+  def self.diff_lines(old_source : String, new_source : String, algorithm : Algorithm = Myers.new, *,
+                      compact : Bool = true,
+                      whitespace : Whitespace = Whitespace::None,
+                      ignore_case : Bool = false) : Array(Edit)
+    la, lb = Tokenizer.lines(old_source, new_source, whitespace: whitespace, ignore_case: ignore_case)
     edits = algorithm.diff(la.tokens, lb.tokens)
     compact ? Compaction.compact(edits, la.tokens, lb.tokens, la.blank_token || lb.blank_token) : edits
   end
@@ -47,8 +50,10 @@ module Delta
                         old_path : String? = nil,
                         new_path : String? = nil,
                         algorithm : Algorithm = Myers.new,
-                        compact : Bool = true) : String
-    la, lb = Tokenizer.lines(old_source, new_source)
+                        compact : Bool = true,
+                        whitespace : Whitespace = Whitespace::None,
+                        ignore_case : Bool = false) : String
+    la, lb = Tokenizer.lines(old_source, new_source, whitespace: whitespace, ignore_case: ignore_case)
     edits = algorithm.diff(la.tokens, lb.tokens)
     edits = Compaction.compact(edits, la.tokens, lb.tokens, la.blank_token || lb.blank_token) if compact
     hunks = Hunk.build(edits, context)
