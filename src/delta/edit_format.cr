@@ -516,7 +516,7 @@ module Delta
       count.times do |i|
         content = lines.line_at(start + i)
         io.write(content)
-        io << '\n' unless content[-1] == NL
+        io << '\n' unless content[-1] == '\n'.ord.to_u8
       end
     end
 

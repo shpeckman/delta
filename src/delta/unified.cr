@@ -43,7 +43,7 @@ module Delta
         io << prefix
         content = lines.line_at(start + i)
         io.write(content)
-        unless content[-1] == NL
+        unless content[-1] == '\n'.ord.to_u8
           io << '\n'
           io << "\\ No newline at end of file" << '\n'
         end
