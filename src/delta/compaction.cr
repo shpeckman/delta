@@ -16,8 +16,8 @@ module Delta
           next
         end
 
-        as = edits[i].a_pos
-        bs = edits[i].b_pos
+        a_s = edits[i].a_pos
+        b_s = edits[i].b_pos
         alen = 0
         blen = 0
         while i < edits.size && !edits[i].kind.equal?
@@ -25,15 +25,15 @@ module Delta
           blen += edits[i].b_len
           i += 1
         end
-        ae = as + alen
-        be = bs + blen
+        a_e = a_s + alen
+        b_e = b_s + blen
 
         up = 0
-        while can_slide_up(a, b, as - up, ae - up, bs - up, be - up, alen, blen, anchor_a, anchor_b)
+        while can_slide_up(a, b, a_s - up, a_e - up, b_s - up, b_e - up, alen, blen, anchor_a, anchor_b)
           up += 1
         end
-        top_as = as - up
-        top_bs = bs - up
+        top_as = a_s - up
+        top_bs = b_s - up
         down = 0
         while can_slide_down(a, b, top_as + down, top_bs + down, alen, blen)
           down += 1
@@ -66,29 +66,29 @@ module Delta
       result
     end
 
-    private def can_slide_up(a : Slice(Int32), b : Slice(Int32), as : Int32, ae : Int32,
-                             bs : Int32, be : Int32, alen : Int32, blen : Int32,
+    private def can_slide_up(a : Slice(Int32), b : Slice(Int32), a_s : Int32, a_e : Int32,
+                             b_s : Int32, b_e : Int32, alen : Int32, blen : Int32,
                              anchor_a : Int32, anchor_b : Int32) : Bool
-      return false if as <= anchor_a || bs <= anchor_b
-      return false if alen > 0 && a[as - 1] != a[ae - 1]
-      return false if blen > 0 && b[bs - 1] != b[be - 1]
+      return false if a_s <= anchor_a || b_s <= anchor_b
+      return false if alen > 0 && a[a_s - 1] != a[a_e - 1]
+      return false if blen > 0 && b[b_s - 1] != b[b_e - 1]
       true
     end
 
-    private def can_slide_down(a : Slice(Int32), b : Slice(Int32), as : Int32,
-                               bs : Int32, alen : Int32, blen : Int32) : Bool
-      return false if as + alen >= a.size || bs + blen >= b.size
-      return false if alen > 0 && a[as] != a[as + alen]
-      return false if blen > 0 && b[bs] != b[bs + blen]
+    private def can_slide_down(a : Slice(Int32), b : Slice(Int32), a_s : Int32,
+                               b_s : Int32, alen : Int32, blen : Int32) : Bool
+      return false if a_s + alen >= a.size || b_s + blen >= b.size
+      return false if alen > 0 && a[a_s] != a[a_s + alen]
+      return false if blen > 0 && b[b_s] != b[b_s + blen]
       true
     end
 
-    private def score(a : Slice(Int32), as : Int32, ae : Int32, blank : Int32?) : Int32
+    private def score(a : Slice(Int32), a_s : Int32, a_e : Int32, blank : Int32?) : Int32
       s = 0
-      if as == 0 || (blank && a[as - 1] == blank)
+      if a_s == 0 || (blank && a[a_s - 1] == blank)
         s += 2
       end
-      if ae == a.size || (blank && ae < a.size && a[ae] == blank)
+      if a_e == a.size || (blank && a_e < a.size && a[a_e] == blank)
         s += 1
       end
       s
