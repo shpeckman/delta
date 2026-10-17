@@ -91,6 +91,8 @@ histogram full rewrite           2.0 ips (505ms)   4.17MB/op   1.03× slower
 
 Myers (the default) is the fastest general-purpose choice. Histogram anchors one match per recursion level, so heavily repeated lines (the synthetic 50k workload reuses 5k distinct lines) degrade it — on real code, where lines are mostly unique, it tracks much closer and produces more readable diffs around moved blocks.
 
+Unified diff pipeline on a 50k-line file with 5% churn (249kB patch): render 69ms (diff + tokenize + hunks + emit), parse 3.3ms, apply 4.6ms.
+
 ## Development
 
 ```console
