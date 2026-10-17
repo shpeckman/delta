@@ -2,8 +2,6 @@
 require "./whitespace"
 
 module Delta
-  NL = 0x0Au8
-
   module Tokenizer
     extend self
 
@@ -74,15 +72,15 @@ module Delta
 
     def normalize(line : Bytes, whitespace : Whitespace, ignore_case : Bool) : String
       size    = line.size
-      has_nl  = size > 0 && line[size - 1] == NL
-      len     = has_nl ? size - 1 : size
+      has_0x0Au8  = size > 0 && line[size - 1] == 0x0Au8
+      len     = has_0x0Au8 ? size - 1 : size
       content = String.new(line[0, len])
       content = content.downcase if ignore_case
       case whitespace
       when .all?    then content = content.gsub(WHITESPACE_RUN, "")
       when .amount? then content = content.gsub(WHITESPACE_RUN, " ")
       end
-      has_nl ? content + "\n" : content
+      has_0x0Au8 ? content + "\n" : content
     end
 
     def offsets(source : String) : Array(Int32)
@@ -92,7 +90,7 @@ module Delta
       result << 0
       i = 0
       while i < bytes.size
-        result << i + 1 if bytes[i] == NL && i + 1 < bytes.size
+        result << i + 1 if bytes[i] == 0x0Au8 && i + 1 < bytes.size
         i += 1
       end
       result
@@ -107,7 +105,7 @@ module Delta
         stop  = i + 1 < offs.size ? offs[i + 1] : bytes.size
         line  = bytes[start, stop - start]
         tok   = interner.token(line)
-        blank = tok if blank.nil? && line.size == 1 && line[0] == NL
+        blank = tok if blank.nil? && line.size == 1 && line[0] == 0x0Au8
         tok
       end
       Lines.new(source, offs, tokens, blank)
@@ -123,7 +121,7 @@ module Delta
         stop  = i + 1 < offs.size ? offs[i + 1] : bytes.size
         line  = bytes[start, stop - start]
         tok   = interner.token(normalize(line, whitespace, ignore_case))
-        blank = tok if blank.nil? && line.size == 1 && line[0] == NL
+        blank = tok if blank.nil? && line.size == 1 && line[0] == 0x0Au8
         tok
       end
       Lines.new(source, offs, tokens, blank)
