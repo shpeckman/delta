@@ -15,7 +15,7 @@ module Delta
         pos = reader.pos
         whitespace = reader.current_char.whitespace?
         reader.next_char
-        if previous_whitespace && previous_whitespace != whitespace
+        if !previous_whitespace.nil? && previous_whitespace != whitespace
           result << source.byte_slice(token_start, pos - token_start)
           token_start = pos
         end
