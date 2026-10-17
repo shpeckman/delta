@@ -1,6 +1,7 @@
 # src/delta.cr
 require "./delta/edit"
 require "./delta/tokenizer"
+require "./delta/workspace"
 require "./delta/algorithm"
 require "./delta/myers"
 require "./delta/histogram"
@@ -16,19 +17,34 @@ require "./delta/words"
 module Delta
   VERSION = {{ `shards version "#{__DIR__}/.."`.chomp.stringify }}
 
-  def self.diff(a : Indexable(T), b : Indexable(T), algorithm : Algorithm = Myers.new, *, compact : Bool = true) : Array(Edit) forall T
+  def self.diff(a : Indexable(T), b : Indexable(T), algorithm : Algorithm = Myers.new, *,
+                compact : Bool = true,
+                workspace : Workspace? = nil) : Array(Edit) forall T
     ta, tb = Tokenizer.tokenize(a, b)
-    edits = algorithm.diff(ta, tb)
-    compact ? Compaction.compact(edits, ta, tb, nil) : edits
+    edits = algorithm.diff(ta, tb, workspace)
+    if compact
+      blank = nil
+      workspace ? Compaction.compact(edits, ta, tb, blank, workspace.compacted, workspace.groups)
+                : Compaction.compact(edits, ta, tb, blank)
+    else
+      edits
+    end
   end
 
   def self.diff_lines(old_source : String, new_source : String, algorithm : Algorithm = Myers.new, *,
                       compact : Bool = true,
                       whitespace : Whitespace = Whitespace::None,
-                      ignore_case : Bool = false) : Array(Edit)
+                      ignore_case : Bool = false,
+                      workspace : Workspace? = nil) : Array(Edit)
     la, lb = Tokenizer.lines(old_source, new_source, whitespace: whitespace, ignore_case: ignore_case)
-    edits = algorithm.diff(la.tokens, lb.tokens)
-    compact ? Compaction.compact(edits, la.tokens, lb.tokens, la.blank_token || lb.blank_token) : edits
+    edits = algorithm.diff(la.tokens, lb.tokens, workspace)
+    if compact
+      blank = la.blank_token || lb.blank_token
+      workspace ? Compaction.compact(edits, la.tokens, lb.tokens, blank, workspace.compacted, workspace.groups)
+                : Compaction.compact(edits, la.tokens, lb.tokens, blank)
+    else
+      edits
+    end
   end
 
   def self.diff_words(old_source : String, new_source : String, algorithm : Algorithm = Myers.new) : Array(Edit)
@@ -52,10 +68,15 @@ module Delta
                         algorithm : Algorithm = Myers.new,
                         compact : Bool = true,
                         whitespace : Whitespace = Whitespace::None,
-                        ignore_case : Bool = false) : String
+                        ignore_case : Bool = false,
+                        workspace : Workspace? = nil) : String
     la, lb = Tokenizer.lines(old_source, new_source, whitespace: whitespace, ignore_case: ignore_case)
-    edits = algorithm.diff(la.tokens, lb.tokens)
-    edits = Compaction.compact(edits, la.tokens, lb.tokens, la.blank_token || lb.blank_token) if compact
+    edits = algorithm.diff(la.tokens, lb.tokens, workspace)
+    if compact
+      blank = la.blank_token || lb.blank_token
+      edits = workspace ? Compaction.compact(edits, la.tokens, lb.tokens, blank, workspace.compacted, workspace.groups)
+                        : Compaction.compact(edits, la.tokens, lb.tokens, blank)
+    end
     hunks = Hunk.build(edits, context)
     Unified.render(la, lb, hunks, old_path, new_path)
   end
