@@ -511,5 +511,50 @@ module Delta
       raise EditFormatError.new("empty path: #{path}") if parts.empty? || parts.all?(&.empty?)
       path
     end
+
+    private def write_line_block(io : IO, lines : Lines, start : Int32, count : Int32) : Nil
+      count.times do |i|
+        content = lines.line_at(start + i)
+        io.write(content)
+        io << '\n' unless content[-1] == NL
+      end
+    end
+
+    private def fuzzy_replace(whole_lines : Array(String), part_lines : Array(String), replace_lines : Array(String), threshold : Float64) : String?
+      part_len = part_lines.size
+      return nil if part_len == 0
+      min_len    = Math.max(1, (part_len * 0.9).floor.to_i)
+      max_len    = (part_len * 1.1).ceil.to_i
+      best_sim   = 0.0
+      best_start = -1
+      best_end   = -1
+      length     = min_len
+      while length <= max_len
+        i = 0
+        while i <= whole_lines.size - length
+          sim = similarity(whole_lines[i, length], part_lines)
+          if sim > best_sim
+            best_sim   = sim
+            best_start = i
+            best_end   = i + length
+          end
+          i += 1
+        end
+        length += 1
+      end
+      return nil if best_start < 0 || best_sim < threshold
+      whole_lines[0, best_start].join + replace_lines.join + whole_lines[best_end, whole_lines.size - best_end].join
+    end
+
+    private def similarity(a : Array(String), b : Array(String)) : Float64
+      edits = Delta.diff(a, b, compact: false)
+      d     = 0
+      edits.each do |e|
+        d += e.a_len + e.b_len unless e.kind.equal?
+      end
+      total = a.size + b.size
+      return 1.0 if total == 0
+      1.0 - d.to_f64 / total
+    end
   end
 end
