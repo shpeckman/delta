@@ -24,8 +24,7 @@ module Delta
     edits = algorithm.diff(ta, tb, workspace)
     if compact
       blank = nil
-      workspace ? Compaction.compact(edits, ta, tb, blank, workspace.compacted, workspace.groups)
-                : Compaction.compact(edits, ta, tb, blank)
+      workspace ? Compaction.compact(edits, ta, tb, blank, workspace.compacted, workspace.groups) : Compaction.compact(edits, ta, tb, blank)
     else
       edits
     end
@@ -40,8 +39,7 @@ module Delta
     edits = algorithm.diff(la.tokens, lb.tokens, workspace)
     if compact
       blank = la.blank_token || lb.blank_token
-      workspace ? Compaction.compact(edits, la.tokens, lb.tokens, blank, workspace.compacted, workspace.groups)
-                : Compaction.compact(edits, la.tokens, lb.tokens, blank)
+      workspace ? Compaction.compact(edits, la.tokens, lb.tokens, blank, workspace.compacted, workspace.groups) : Compaction.compact(edits, la.tokens, lb.tokens, blank)
     else
       edits
     end
@@ -74,8 +72,7 @@ module Delta
     edits = algorithm.diff(la.tokens, lb.tokens, workspace)
     if compact
       blank = la.blank_token || lb.blank_token
-      edits = workspace ? Compaction.compact(edits, la.tokens, lb.tokens, blank, workspace.compacted, workspace.groups)
-                        : Compaction.compact(edits, la.tokens, lb.tokens, blank)
+      edits = workspace ? Compaction.compact(edits, la.tokens, lb.tokens, blank, workspace.compacted, workspace.groups) : Compaction.compact(edits, la.tokens, lb.tokens, blank)
     end
     hunks = Hunk.build(edits, context)
     Unified.render(la, lb, hunks, old_path, new_path)

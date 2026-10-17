@@ -2,7 +2,7 @@
 module Delta
   class Histogram < Algorithm
     MIN_HISTOGRAM = 64
-    MAX_COUNT     = 8
+    MAX_COUNT     =  8
 
     def diff(a : Slice(Int32), b : Slice(Int32)) : Array(Edit)
       diff(a, b, nil)
