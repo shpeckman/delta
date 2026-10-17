@@ -1,7 +1,7 @@
 # spec/unified_spec.cr
 require "./spec_helper"
 
-describe Delta.unified_diff do
+describe "Delta.unified_diff" do
   it "returns an empty string for identical inputs" do
     Delta.unified_diff("a\nb\n", "a\nb\n").should eq ""
   end
