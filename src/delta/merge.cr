@@ -99,7 +99,7 @@ module Delta
           end
 
           ours_rep = replay(lb, lo, gstart, gend, co[i...gi])
-          theirs_rep = replay(lb, lt, gstart, gend, ct[gj...gj])
+          theirs_rep = replay(lb, lt, gstart, gend, ct[j...gj])
           if i == gi
             io << theirs_rep
           elsif j == gj
