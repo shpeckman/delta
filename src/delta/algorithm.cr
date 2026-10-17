@@ -13,7 +13,7 @@ module Delta
       end
     end
 
-    protected def finalize(edits : Array(Edit)) : Array(Edit)
+    protected def normalize(edits : Array(Edit)) : Array(Edit)
       swapped = [] of Edit
       i = 0
       while i < edits.size
