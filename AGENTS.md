@@ -17,7 +17,7 @@
 - `src/delta/merge.cr` — three-way merge with conflict markers; `MergeResult`.
 - `src/delta/words.cr` — whitespace-delimited word tokenizer and inline word-diff markup.
 - `spec/` — `crystal spec`; round-trip properties hold for all three algorithms.
-- `bench/` — `crystal run --release bench/diff_bench.cr` and `bench/unified_bench.cr`.
+- `bench/` — `crystal run --release bench/diff_bench.cr`, `bench/unified_bench.cr`, and `bench/memory_bench.cr`.
 
 ## Commands
 

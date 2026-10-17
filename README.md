@@ -139,6 +139,7 @@ Benchmarks (run in release mode):
 ```console
 crystal run --release bench/diff_bench.cr     # algorithm comparison across workloads
 crystal run --release bench/unified_bench.cr  # render/parse/apply throughput
+crystal run --release bench/memory_bench.cr   # workspace allocation comparison
 ```
 
 Snapshot (Crystal 1.21, release mode, ThinkPad X13 i5-1240P):
