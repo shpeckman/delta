@@ -9,7 +9,7 @@ describe "Delta.unified_diff" do
   it "renders a single hunk with headers" do
     old = "a\nb\nc\nd\ne\nf\ng\n"
     new = "a\nb\nX\nd\ne\nf\ng\n"
-    Delta.unified_diff(old, new, context: 1, old_path: "a/f", new_path: "b/f").should eq <<-DIFF
+    Delta.unified_diff(old, new, context: 1, old_path: "a/f", new_path: "b/f").should eq <<-DIFF + "\n"
       --- a/f
       +++ b/f
       @@ -2,3 +2,3 @@
