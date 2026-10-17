@@ -20,14 +20,14 @@ puts "Diff engine allocation (pre-tokenized, 50k lines):"
 {"myers" => Delta::Myers.new, "histogram" => Delta::Histogram.new, "patience" => Delta::Patience.new}.each do |name, algorithm|
   ws = Delta::Workspace.new
   algorithm.diff(tokens_a, tokens_b, ws)
-  without = Benchmark.memory { algorithm.diff(tokens_a, tokens_b) }
-  with = Benchmark.memory { algorithm.diff(tokens_a, tokens_b, ws) }
-  puts "  %-9s  without ws %8s   with ws %8s" % {name, human(without), human(with)}
+  without_ws = Benchmark.memory { algorithm.diff(tokens_a, tokens_b) }
+  with_ws = Benchmark.memory { algorithm.diff(tokens_a, tokens_b, ws) }
+  puts "  %-9s  without_ws ws %8s   with_ws ws %8s" % {name, human(without_ws), human(with_ws)}
 end
 
 puts "\nFull diff_lines allocation (includes tokenization):"
 ws = Delta::Workspace.new
 Delta.diff_lines(old, new, workspace: ws)
-without = Benchmark.memory { Delta.diff_lines(old, new) }
-with = Benchmark.memory { Delta.diff_lines(old, new, workspace: ws) }
-puts "  myers       without ws %8s   with ws %8s" % {human(without), human(with)}
+without_ws = Benchmark.memory { Delta.diff_lines(old, new) }
+with_ws = Benchmark.memory { Delta.diff_lines(old, new, workspace: ws) }
+puts "  myers       without_ws ws %8s   with_ws ws %8s" % {human(without_ws), human(with_ws)}
