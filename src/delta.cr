@@ -21,6 +21,17 @@ module Delta
     algorithm.diff(la.tokens, lb.tokens)
   end
 
+  def self.unified_diff(old_source : String, new_source : String, *,
+                        context : Int32 = 3,
+                        old_path : String? = nil,
+                        new_path : String? = nil,
+                        algorithm : Algorithm = Myers.new) : String
+    la, lb = Tokenizer.lines(old_source, new_source)
+    edits = algorithm.diff(la.tokens, lb.tokens)
+    hunks = Hunk.build(edits, context)
+    Unified.render(la, lb, hunks, old_path, new_path)
+  end
+
   def self.apply(a : Indexable(T), b : Indexable(T), edits : Array(Edit)) : Array(T) forall T
     result = [] of T
     edits.each do |e|
