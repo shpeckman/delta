@@ -99,12 +99,26 @@ module Delta
     EditFormat.parse(text, valid_files)
   end
 
-  def self.apply_edit(source : String, edit : EditFormat::FileEdit) : String
-    EditFormat.apply_file(source, edit)
+  def self.apply_edit(source : String, edit : EditFormat::FileEdit, *, fuzzy : Bool = false, threshold : Float64 = 0.8) : String
+    EditFormat.apply_file(source, edit, fuzzy: fuzzy, threshold: threshold)
   end
 
-  def self.apply_edits(text : String, root : String) : Array(String)
-    EditFormat.apply(text, root)
+  def self.apply_edits(text : String, root : String, *, fuzzy : Bool = false, threshold : Float64 = 0.8) : Array(String)
+    EditFormat.apply(text, root, fuzzy: fuzzy, threshold: threshold)
+  end
+
+  def self.render_whole(path : String, content : String) : String
+    EditFormat.render_whole(path, content)
+  end
+
+  def self.render_udiff(old : String, new : String, old_path : String, new_path : String, *,
+                        context : Int32 = 3, algorithm : Algorithm = Myers.new) : String
+    EditFormat.render_udiff(old, new, old_path, new_path, context: context, algorithm: algorithm)
+  end
+
+  def self.render_replace(old : String, new : String, path : String, *,
+                          context : Int32 = 3, algorithm : Algorithm = Myers.new) : String
+    EditFormat.render_replace(old, new, path, context: context, algorithm: algorithm)
   end
 
   def self.merge(base : String, ours : String, theirs : String, *,
