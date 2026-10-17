@@ -171,7 +171,7 @@ module Delta
             kind = case line.kind
                    when .delete? then Kind::Insert
                    when .insert? then Kind::Delete
-                   else                Kind::Equal
+                   else               Kind::Equal
                    end
             Line.new(kind, line.content)
           end
@@ -275,6 +275,11 @@ module Delta
       stripped = parts.join('/')
       raise PatchError.new("empty path: #{path}") if stripped.empty?
       stripped
+    end
+
+    private def write_range(io : IO, start : Int32, count : Int32) : Nil
+      io << (count == 0 ? start : start + 1)
+      io << ',' << count unless count == 1
     end
 
     private def find_position(lines : Lines, hunk : ParsedHunk, min_pos : Int32) : Int32
