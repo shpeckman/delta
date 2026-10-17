@@ -127,7 +127,7 @@ Delta.apply_edits(text, "/path/to/repo")           # apply all edits to files (a
 - **diff / diff-fenced** — `<<<<<<< SEARCH / ======= / >>>>>>> REPLACE` blocks; an empty `SEARCH` appends or creates the file; matching tolerates leading-whitespace drift and `...` elision.
 - **udiff** — a ` ```diff `-fenced unified diff; hunks apply by search/replace, so `@@` line numbers are ignored.
 
-Pass `valid_files:` to `parse_edits` to resolve basename-only filenames against a known path list. `apply_edits` creates files with parent directories, is all-or-nothing, and rejects absolute paths and `..` traversal. Malformed or non-matching edits raise `Delta::EditFormatError`. `editor-diff` and `editor-whole` are prompt-only variants and parse as `diff` and `whole`.
+Pass `valid_files:` to `parse_edits` to resolve basename-only filenames against a known path list. `apply_edits` creates files with parent directories, is all-or-nothing, and rejects absolute paths and `..` traversal. Malformed or non-matching edits raise `Delta::EditFormat::Error`. `editor-diff` and `editor-whole` are prompt-only variants and parse as `diff` and `whole`.
 
 Enable a last-resort similarity match (opt-in, off by default) for noisy LLM output where a `SEARCH` block doesn't match exactly:
 
