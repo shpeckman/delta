@@ -174,4 +174,75 @@ describe Delta::EditFormat do
       Delta.apply_edits("```diff\n--- /x\n+++ /x\n@@ -1,1 +1,1 @@\n-a\n+b\n```\n", Dir.tempdir)
     end
   end
+
+  it "render_whole round-trips" do
+    edits = Delta.parse_edits(Delta.render_whole("f.py", "a\nb\n"))
+    edits[0].path.should eq "f.py"
+    Delta.apply_edit("ignored", edits[0]).should eq "a\nb\n"
+  end
+
+  it "render_whole normalizes a missing trailing newline" do
+    edits = Delta.parse_edits(Delta.render_whole("f.py", "abc"))
+    Delta.apply_edit("", edits[0]).should eq "abc\n"
+  end
+
+  it "render_udiff round-trips" do
+    old   = "a\nb\nc\nd\n"
+    new   = "a\nX\nc\nd\n"
+    edits = Delta.parse_edits(Delta.render_udiff(old, new, "a/f", "b/f"))
+    edits[0].path.should eq "f"
+    Delta.apply_edit(old, edits[0]).should eq new
+  end
+
+  it "render_udiff returns empty for no change" do
+    Delta.render_udiff("a\n", "a\n", "a/f", "b/f").should eq ""
+  end
+
+  it "render_replace round-trips a single change" do
+    old   = "a\nb\nc\nd\ne\nf\n"
+    new   = "a\nb\nX\nc\nd\ne\nf\n"
+    edits = Delta.parse_edits(Delta.render_replace(old, new, "f.py"))
+    edits[0].path.should eq "f.py"
+    Delta.apply_edit(old, edits[0]).should eq new
+  end
+
+  it "render_replace round-trips multiple changes" do
+    old   = "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n"
+    new   = "1\nX\n3\n4\n5\n6\n7\n8\n9\nZ\n"
+    edits = Delta.parse_edits(Delta.render_replace(old, new, "f.py"))
+    edits[0].blocks.size.should eq 2
+    Delta.apply_edit(old, edits[0]).should eq new
+  end
+
+  it "render_replace handles whole-file create and delete" do
+    create = Delta.parse_edits(Delta.render_replace("", "a\nb\n", "f.py"))
+    Delta.apply_edit("", create[0]).should eq "a\nb\n"
+
+    delete = Delta.parse_edits(Delta.render_replace("a\nb\n", "", "f.py"))
+    Delta.apply_edit("a\nb\n", delete[0]).should eq ""
+  end
+
+  it "render_replace returns empty for no change" do
+    Delta.render_replace("a\n", "a\n", "f.py").should eq ""
+  end
+
+  it "fuzzy fallback applies a near-miss SEARCH block" do
+    src     = "l1\nl2\nl3\nl4\nl5\nl6\nl7\nl8\nl9\nl10\n"
+    search  = "l1\nl2\nCHANGED\nl4\nl5\nl6\nl7\nl8\nl9\nl10\n"
+    replace = "l1\nl2\nNEW\nl4\nl5\nl6\nl7\nl8\nl9\nl10\n"
+    text    = "f.py\n```\n<<<<<<< SEARCH\n" + search + "=======\n" + replace + ">>>>>>> REPLACE\n```\n"
+    edits   = Delta.parse_edits(text)
+    expect_raises(Delta::EditFormatError) { Delta.apply_edit(src, edits[0]) }
+    Delta.apply_edit(src, edits[0], fuzzy: true).should eq replace
+  end
+
+  it "fuzzy fallback respects the threshold" do
+    src     = "l1\nl2\nl3\nl4\nl5\nl6\nl7\nl8\nl9\nl10\n"
+    search  = "l1\nl2\nCHANGED\nl4\nl5\nl6\nl7\nl8\nl9\nl10\n"
+    replace = "l1\nl2\nNEW\nl4\nl5\nl6\nl7\nl8\nl9\nl10\n"
+    text    = "f.py\n```\n<<<<<<< SEARCH\n" + search + "=======\n" + replace + ">>>>>>> REPLACE\n```\n"
+    edits   = Delta.parse_edits(text)
+    expect_raises(Delta::EditFormatError) { Delta.apply_edit(src, edits[0], fuzzy: true, threshold: 0.95) }
+    Delta.apply_edit(src, edits[0], fuzzy: true, threshold: 0.85).should eq replace
+  end
 end
