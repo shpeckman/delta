@@ -1,5 +1,5 @@
-# spec/ignore_spec.cr
-require "./spec_helper"
+# spec/delta/ignore_spec.cr
+require "../spec_helper"
 
 describe Delta do
   describe "ignore options" do

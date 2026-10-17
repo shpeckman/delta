@@ -1,5 +1,5 @@
-# bench/diff_bench.cr
-require "./bench_helper"
+# bench/delta/diff_bench.cr
+require "../bench_helper"
 
 def churn(lines : Array(String), rnd : Random, rate : Float64) : Array(String)
   result = [] of String

@@ -1,7 +1,7 @@
-# spec/patch_extra_spec.cr
+# spec/delta/patch_extra_spec.cr
 require "spec"
 require "file_utils"
-require "../src/delta/patch"
+require "../../src/delta/patch"
 
 private def with_tmpdir(&block : String ->)
   path = File.tempname("delta-spec-")

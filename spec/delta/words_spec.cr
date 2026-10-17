@@ -1,4 +1,4 @@
-# spec/words_spec.cr
+# spec/delta/words_spec.cr
 require "spec"
 require "../src/delta/words"
 

@@ -1,5 +1,5 @@
-# spec/workspace_spec.cr
-require "./spec_helper"
+# spec/delta/workspace_spec.cr
+require "../spec_helper"
 
 describe Delta::Workspace do
   it "produces the same edits with and without a workspace" do

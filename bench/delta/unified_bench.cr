@@ -1,5 +1,5 @@
-# bench/unified_bench.cr
-require "./bench_helper"
+# bench/delta/unified_bench.cr
+require "../bench_helper"
 
 rnd     = Random.new(77)
 base    = (1..50_000).map { |i| "line #{i % 5000}" }

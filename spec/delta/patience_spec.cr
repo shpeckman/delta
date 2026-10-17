@@ -1,5 +1,5 @@
-# spec/patience_spec.cr
-require "./spec_helper"
+# spec/delta/patience_spec.cr
+require "../spec_helper"
 
 describe Delta::Patience do
   it "returns no edits for empty inputs" do

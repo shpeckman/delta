@@ -1,5 +1,5 @@
-# spec/edit_format_spec.cr
-require "./spec_helper"
+# spec/delta/edit_format_spec.cr
+require "../spec_helper"
 require "file_utils"
 
 private def with_tempdir(&)

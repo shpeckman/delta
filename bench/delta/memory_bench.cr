@@ -1,5 +1,5 @@
-# bench/memory_bench.cr
-require "./bench_helper"
+# bench/delta/memory_bench.cr
+require "../bench_helper"
 
 def human(bytes : Int64) : String
   mb = bytes / 1_048_576.0

@@ -1,5 +1,5 @@
-# spec/edit_spec.cr
-require "./spec_helper"
+# spec/delta/edit_spec.cr
+require "../spec_helper"
 
 describe Delta::Edit do
   it "compares by value" do

@@ -1,5 +1,5 @@
-# spec/merge_spec.cr
-require "./spec_helper"
+# spec/delta/merge_spec.cr
+require "../spec_helper"
 
 describe "Delta.merge" do
   it "merges cleanly when each side changes different regions" do
