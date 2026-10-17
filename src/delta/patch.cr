@@ -221,20 +221,20 @@ module Delta
       end
     end
 
-    def apply_to_dir(patch : String, root : String, *, strip : Int32 = 1) : Array(String)
+    def apply_to_dir(patch : String, root : String, *, strip : Int32 = 1, fuzz : Int32 = 0) : Array(String)
       actions = [] of {String, String, Bool}
       affected = [] of String
       parse(patch).each do |fp|
         if fp.old_path == "/dev/null"
           new_path = fp.new_path || raise PatchError.new("missing new path")
           stripped = stripped_path(new_path, strip)
-          result = apply_file("", fp)
+          result = apply_file("", fp, fuzz: fuzz)
           actions << {stripped, result, false}
           affected << stripped
         elsif fp.new_path == "/dev/null"
           old_path = fp.old_path || raise PatchError.new("missing old path")
           stripped = stripped_path(old_path, strip)
-          result = apply_file(read_file(root, stripped), fp)
+          result = apply_file(read_file(root, stripped), fp, fuzz: fuzz)
           unless result.empty?
             raise PatchError.new("deletion produced content for #{stripped}")
           end
@@ -245,7 +245,7 @@ module Delta
           new_path = fp.new_path || raise PatchError.new("missing new path")
           old_stripped = stripped_path(old_path, strip)
           new_stripped = stripped_path(new_path, strip)
-          result = apply_file(read_file(root, old_stripped), fp)
+          result = apply_file(read_file(root, old_stripped), fp, fuzz: fuzz)
           actions << {new_stripped, result, false}
           affected << new_stripped
         end
