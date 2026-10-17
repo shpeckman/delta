@@ -55,8 +55,16 @@ module Delta
     Unified.render(la, lb, hunks, old_path, new_path)
   end
 
-  def self.apply_patch(source : String, patch : String) : String
-    Patch.apply(source, patch)
+  def self.apply_patch(source : String, patch : String, *, reverse : Bool = false) : String
+    Patch.apply(source, patch, reverse: reverse)
+  end
+
+  def self.reverse_patch(patch : String) : String
+    Patch.reverse(patch)
+  end
+
+  def self.apply_patch_to_dir(patch : String, root : String, *, strip : Int32 = 1) : Array(String)
+    Patch.apply_to_dir(patch, root, strip: strip)
   end
 
   def self.parse_patch(patch : String) : Array(Patch::FilePatch)
