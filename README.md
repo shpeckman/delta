@@ -75,6 +75,22 @@ crystal run --release bench/diff_bench.cr     # algorithm comparison across work
 crystal run --release bench/unified_bench.cr  # render/parse/apply throughput
 ```
 
+Snapshot (Crystal 1.21, release mode, ThinkPad X13 i5-1240P):
+
+```text
+   myers small (100 lines)  83.5k ips ( 12.0µs)   17.1kB/op   fastest
+   histogram small          51.1k ips ( 19.6µs)   21.6kB/op   1.63× slower
+    patience small          42.3k ips ( 23.6µs)   27.6kB/op   1.97× slower
+   myers 50k lines 5% churn    24.7 ips (40.4ms)   6.31MB/op   fastest
+histogram 50k lines 5% churn     3.7 ips (268ms)   7.03MB/op   6.64× slower
+ patience 50k lines 5% churn    23.3 ips (42.9ms)  7.07MB/op   1.06× slower
+   myers full rewrite (10k)     2.0 ips (490ms)    3.17MB/op   fastest
+histogram full rewrite           2.0 ips (505ms)   4.17MB/op   1.03× slower
+ patience full rewrite           2.0 ips (494ms)   4.67MB/op   1.01× slower
+```
+
+Myers (the default) is the fastest general-purpose choice. Histogram anchors one match per recursion level, so heavily repeated lines (the synthetic 50k workload reuses 5k distinct lines) degrade it — on real code, where lines are mostly unique, it tracks much closer and produces more readable diffs around moved blocks.
+
 ## Development
 
 ```console
