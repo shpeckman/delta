@@ -33,7 +33,13 @@ Diff text line by line (fast path: lines are interned as byte slices, no per-lin
 
 ```crystal
 edits = Delta.diff_lines(old_text, new_text)
+
+Delta.diff_lines(old_text, new_text,
+  whitespace: Delta::Whitespace::All,  # None | Amount | All
+  ignore_case: true)
 ```
+
+`Whitespace::All` ignores all whitespace; `Whitespace::Amount` ignores the amount of whitespace but not its presence; `ignore_case` folds case. These affect matching only — reported positions and rendered output always use the original text. Pass the same options to `unified_diff`.
 
 Render a unified diff:
 
@@ -51,6 +57,12 @@ files = Delta.parse_patch(patch_text)   # => Array(Delta::Patch::FilePatch)
 result = Delta.apply_patch(old_text, patch_text)
 ```
 
+Fuzzy apply tolerates a fixed number of mismatched *context* lines (changed lines must still match exactly), like `patch --fuzz=N`:
+
+```crystal
+Delta.apply_patch(almost_matching_text, patch, fuzz: 2)
+```
+
 Choose an algorithm:
 
 ```crystal
@@ -62,6 +74,18 @@ Delta.diff_lines(a, b, algorithm: Delta::Patience.new)  # anchors on unique line
 All three produce valid diffs (applying the edits to the old input always yields the new input); they differ in edit minimality and how readable the result is on moved or heavily repeated content.
 
 Hunks are "compacted" by default: change groups slide across identical lines to sit at blank-line boundaries, matching git's xdiff behavior. Pass `compact: false` to `diff` / `diff_lines` / `unified_diff` to disable it.
+
+## Reusable workspace
+
+For batch workloads, pass a `Delta::Workspace` to avoid re-allocating scratch buffers (the Myers V-arrays, histogram/patience count maps, edit lists) across calls:
+
+```crystal
+ws = Delta::Workspace.new
+edits = Delta.diff_lines(a, b, workspace: ws)
+more   = Delta.diff_lines(c, d, workspace: ws)   # reuses ws's buffers
+```
+
+`Workspace` is not thread-safe by itself; use one per fiber when diffing concurrently. The returned edit array is reused on the next call through the same workspace, so copy it if you need to retain it.
 
 ## Three-way merge
 
