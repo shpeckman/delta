@@ -284,34 +284,60 @@ module Delta
       io << ',' << count unless count == 1
     end
 
-    private def find_position(lines : Lines, hunk : ParsedHunk, min_pos : Int32) : Int32
+    private def find_position(lines : Lines, hunk : ParsedHunk, min_pos : Int32, fuzz : Int32) : Int32
       base = Math.max(hunk.a_start, min_pos)
-      offset = 0
-      loop do
-        fwd = base + offset
-        if fwd <= lines.size && matches?(lines, fwd, hunk)
-          return fwd
+      if fuzz == 0
+        offset = 0
+        loop do
+          fwd = base + offset
+          return fwd if fwd <= lines.size && match_errors(lines, fwd, hunk) == 0
+          bwd = base - offset
+          return bwd if offset > 0 && bwd >= min_pos && match_errors(lines, bwd, hunk) == 0
+          offset += 1
+          if fwd > lines.size && bwd < min_pos
+            raise PatchError.new("hunk @@ -#{hunk.a_start},#{hunk.a_count} +#{hunk.b_start},#{hunk.b_count} @@ does not apply")
+          end
         end
-        bwd = base - offset
-        if offset > 0 && bwd >= min_pos && matches?(lines, bwd, hunk)
-          return bwd
+      else
+        best_pos = -1
+        best_errors = Int32::MAX
+        best_dist = Int32::MAX
+        pos = min_pos
+        while pos <= lines.size
+          errors = match_errors(lines, pos, hunk)
+          if errors && errors <= fuzz
+            dist = (pos - base).abs
+            if errors < best_errors || (errors == best_errors && dist < best_dist)
+              best_errors = errors
+              best_dist = dist
+              best_pos = pos
+            end
+          end
+          pos += 1
         end
-        offset += 1
-        if fwd > lines.size && bwd < min_pos
+        if best_pos < 0
           raise PatchError.new("hunk @@ -#{hunk.a_start},#{hunk.a_count} +#{hunk.b_start},#{hunk.b_count} @@ does not apply")
         end
+        best_pos
       end
     end
 
-    private def matches?(lines : Lines, pos : Int32, hunk : ParsedHunk) : Bool
+    private def match_errors(lines : Lines, pos : Int32, hunk : ParsedHunk) : Int32?
       idx = pos
+      errors = 0
       hunk.lines.each do |l|
         next if l.kind.insert?
-        return false if idx >= lines.size
-        return false unless lines.line_at(idx) == l.content.to_slice
-        idx += 1
+        return nil if idx >= lines.size
+        if lines.line_at(idx) == l.content.to_slice
+          idx += 1
+        elsif l.kind.equal?
+          errors += 1
+          idx += 1
+        else
+          return nil
+        end
       end
-      true
+      errors
     end
   end
 end
