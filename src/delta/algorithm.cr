@@ -44,3 +44,7 @@ abstract class Delta::Algorithm
     end
   end
 end
+
+require "./algorithms/myers"
+require "./algorithms/histogram"
+require "./algorithms/patience"
