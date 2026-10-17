@@ -3,6 +3,10 @@ module Delta
   abstract class Algorithm
     abstract def diff(a : Slice(Int32), b : Slice(Int32)) : Array(Edit)
 
+    def diff(a : Slice(Int32), b : Slice(Int32), ws : Workspace?) : Array(Edit)
+      diff(a, b)
+    end
+
     protected def emit(edits : Array(Edit), kind : Kind, a_pos : Int32, a_len : Int32, b_pos : Int32, b_len : Int32) : Nil
       return if a_len == 0 && b_len == 0
       if (last = edits.last?) && last.kind == kind &&
@@ -13,32 +17,32 @@ module Delta
       end
     end
 
-    protected def normalize(edits : Array(Edit)) : Array(Edit)
-      swapped = [] of Edit
+    protected def normalize(edits : Array(Edit), out : Array(Edit)) : Array(Edit)
+      out.clear
       i = 0
       while i < edits.size
         e = edits[i]
         if e.kind.insert? && i + 1 < edits.size &&
            (nxt = edits[i + 1]).kind.delete? &&
            nxt.a_pos == e.a_pos && nxt.b_pos == e.b_pos + e.b_len
-          swapped << nxt
-          swapped << e
+          push(out, nxt)
+          push(out, e)
           i += 2
         else
-          swapped << e
+          push(out, e)
           i += 1
         end
       end
-      merged = [] of Edit
-      swapped.each do |e|
-        if (last = merged.last?) && last.kind == e.kind &&
-           last.a_pos + last.a_len == e.a_pos && last.b_pos + last.b_len == e.b_pos
-          merged[-1] = Edit.new(e.kind, last.a_pos, last.a_len + e.a_len, last.b_pos, last.b_len + e.b_len)
-        else
-          merged << e
-        end
+      out
+    end
+
+    private def push(out : Array(Edit), e : Edit) : Nil
+      if (last = out.last?) && last.kind == e.kind &&
+         last.a_pos + last.a_len == e.a_pos && last.b_pos + last.b_len == e.b_pos
+        out[-1] = Edit.new(e.kind, last.a_pos, last.a_len + e.a_len, last.b_pos, last.b_len + e.b_len)
+      else
+        out << e
       end
-      merged
     end
   end
 end
