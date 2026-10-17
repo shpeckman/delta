@@ -6,39 +6,37 @@ module Delta
     extend self
 
     def compact(edits : Array(Edit), a : Slice(Int32), b : Slice(Int32), blank : Int32?) : Array(Edit)
+      groups = extract_groups(edits)
       result = [] of Edit
       anchor_a = 0
       anchor_b = 0
-      i = 0
-      while i < edits.size
-        if edits[i].kind.equal?
-          i += 1
-          next
-        end
 
-        a_s = edits[i].a_pos
-        a_e = edits[i].a_pos + edits[i].a_len
-        b_s = edits[i].b_pos
-        b_e = edits[i].b_pos + edits[i].b_len
-        while i < edits.size && !edits[i].kind.equal?
-          e = edits[i]
-          a_s = Math.min(a_s, e.a_pos)
-          a_e = Math.max(a_e, e.a_pos + e.a_len)
-          b_s = Math.min(b_s, e.b_pos)
-          b_e = Math.max(b_e, e.b_pos + e.b_len)
-          i += 1
-        end
+      groups.each_with_index do |group, k|
+        a_s, a_e, b_s, b_e = group
         alen = a_e - a_s
         blen = b_e - b_s
 
         up = 0
-        while can_slide_up(a, b, a_s - up, a_e - up, b_s - up, b_e - up, alen, blen, anchor_a, anchor_b)
+        while a_s - up > anchor_a && b_s - up > anchor_b &&
+              (alen == 0 || a[a_s - up - 1] == a[a_e - up - 1]) &&
+              (blen == 0 || b[b_s - up - 1] == b[b_e - up - 1])
           up += 1
         end
         top_as = a_s - up
         top_bs = b_s - up
+
+        if k + 1 < groups.size
+          next_a = groups[k + 1][0]
+          next_b = groups[k + 1][2]
+        else
+          next_a = a.size
+          next_b = b.size
+        end
+
         down = 0
-        while can_slide_down(a, b, top_as + down, top_bs + down, alen, blen)
+        while top_as + down + alen < next_a && top_bs + down + blen < next_b &&
+              (alen == 0 || a[top_as + down] == a[top_as + down + alen]) &&
+              (blen == 0 || b[top_bs + down] == b[top_bs + down + blen])
           down += 1
         end
 
@@ -69,21 +67,29 @@ module Delta
       result
     end
 
-    private def can_slide_up(a : Slice(Int32), b : Slice(Int32), a_s : Int32, a_e : Int32,
-                             b_s : Int32, b_e : Int32, alen : Int32, blen : Int32,
-                             anchor_a : Int32, anchor_b : Int32) : Bool
-      return false if a_s <= anchor_a || b_s <= anchor_b
-      return false if alen > 0 && a[a_s - 1] != a[a_e - 1]
-      return false if blen > 0 && b[b_s - 1] != b[b_e - 1]
-      true
-    end
-
-    private def can_slide_down(a : Slice(Int32), b : Slice(Int32), a_s : Int32,
-                               b_s : Int32, alen : Int32, blen : Int32) : Bool
-      return false if a_s + alen >= a.size || b_s + blen >= b.size
-      return false if alen > 0 && a[a_s] != a[a_s + alen]
-      return false if blen > 0 && b[b_s] != b[b_s + blen]
-      true
+    private def extract_groups(edits : Array(Edit)) : Array({Int32, Int32, Int32, Int32})
+      groups = [] of {Int32, Int32, Int32, Int32}
+      i = 0
+      while i < edits.size
+        if edits[i].kind.equal?
+          i += 1
+          next
+        end
+        a_s = edits[i].a_pos
+        a_e = edits[i].a_pos + edits[i].a_len
+        b_s = edits[i].b_pos
+        b_e = edits[i].b_pos + edits[i].b_len
+        while i < edits.size && !edits[i].kind.equal?
+          e = edits[i]
+          a_s = Math.min(a_s, e.a_pos)
+          a_e = Math.max(a_e, e.a_pos + e.a_len)
+          b_s = Math.min(b_s, e.b_pos)
+          b_e = Math.max(b_e, e.b_pos + e.b_len)
+          i += 1
+        end
+        groups << {a_s, a_e, b_s, b_e}
+      end
+      groups
     end
 
     private def score(a : Slice(Int32), a_s : Int32, a_e : Int32, blank : Int32?) : Int32
