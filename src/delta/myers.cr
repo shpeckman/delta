@@ -9,7 +9,7 @@ module Delta
       vf = Slice(Int32).new(2 * bound + 3, 0)
       vb = Slice(Int32).new(2 * bound + 3, 0)
       diff_region(a, 0, a.size, b, 0, b.size, vf, vb, edits)
-      edits
+      finalize(edits)
     end
 
     def diff_region(a : Slice(Int32), a_lo : Int32, a_hi : Int32,

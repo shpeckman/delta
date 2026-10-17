@@ -11,7 +11,7 @@ module Delta
       rec(a, 0, a.size, b, 0, b.size, Myers.new, vf, vb,
         Hash(Int32, Int32).new(0), Hash(Int32, Int32).new(0),
         Hash(Int32, Int32).new, edits)
-      edits
+      finalize(edits)
     end
 
     private def rec(a : Slice(Int32), a_lo : Int32, a_hi : Int32,
