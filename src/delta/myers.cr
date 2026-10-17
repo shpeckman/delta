@@ -2,14 +2,25 @@
 module Delta
   class Myers < Algorithm
     def diff(a : Slice(Int32), b : Slice(Int32)) : Array(Edit)
-      edits = [] of Edit
+      diff(a, b, nil)
+    end
+
+    def diff(a : Slice(Int32), b : Slice(Int32), ws : Workspace?) : Array(Edit)
       max = a.size + b.size
+      edits = ws ? ws.edits : [] of Edit
+      edits.clear
       return edits if max == 0
-      bound = max + (max + 1) // 2
-      vf = Slice(Int32).new(2 * bound + 3, 0)
-      vb = Slice(Int32).new(2 * bound + 3, 0)
+      if ws
+        vf, vb = ws.v_arrays(max)
+        out = ws.normalized
+      else
+        bound = max + (max + 1) // 2
+        vf = Slice(Int32).new(2 * bound + 3, 0)
+        vb = Slice(Int32).new(2 * bound + 3, 0)
+        out = [] of Edit
+      end
       diff_region(a, 0, a.size, b, 0, b.size, vf, vb, edits)
-      normalize(edits)
+      normalize(edits, out)
     end
 
     def diff_region(a : Slice(Int32), a_lo : Int32, a_hi : Int32,

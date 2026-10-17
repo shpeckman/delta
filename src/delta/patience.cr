@@ -2,16 +2,30 @@
 module Delta
   class Patience < Algorithm
     def diff(a : Slice(Int32), b : Slice(Int32)) : Array(Edit)
-      edits = [] of Edit
+      diff(a, b, nil)
+    end
+
+    def diff(a : Slice(Int32), b : Slice(Int32), ws : Workspace?) : Array(Edit)
       max = a.size + b.size
+      edits = ws ? ws.edits : [] of Edit
+      edits.clear
       return edits if max == 0
-      bound = max + (max + 1) // 2
-      vf = Slice(Int32).new(2 * bound + 3, 0)
-      vb = Slice(Int32).new(2 * bound + 3, 0)
-      rec(a, 0, a.size, b, 0, b.size, Myers.new, vf, vb,
-        Hash(Int32, Int32).new(0), Hash(Int32, Int32).new(0),
-        Hash(Int32, Int32).new, edits)
-      normalize(edits)
+      if ws
+        vf, vb = ws.v_arrays(max)
+        counts_a, counts_b = ws.counts
+        bpos_map = ws.bpos_map
+        out = ws.normalized
+      else
+        bound = max + (max + 1) // 2
+        vf = Slice(Int32).new(2 * bound + 3, 0)
+        vb = Slice(Int32).new(2 * bound + 3, 0)
+        counts_a = Hash(Int32, Int32).new(0)
+        counts_b = Hash(Int32, Int32).new(0)
+        bpos_map = Hash(Int32, Int32).new
+        out = [] of Edit
+      end
+      rec(a, 0, a.size, b, 0, b.size, Myers.new, vf, vb, counts_a, counts_b, bpos_map, edits)
+      normalize(edits, out)
     end
 
     private def rec(a : Slice(Int32), a_lo : Int32, a_hi : Int32,
