@@ -27,7 +27,7 @@ describe "Delta.unified_diff" do
     new_lines[17] = "Y"
     new = new_lines.join("\n") + "\n"
     patch = Delta.unified_diff(old, new, context: 2)
-    patch.scan(/@@ /).size.should eq 4
+    patch.scan(/@@ /).size.should eq 2
     patch.should contain "@@ -1,5 +1,5 @@"
     patch.should contain "@@ -16,5 +16,5 @@"
   end
