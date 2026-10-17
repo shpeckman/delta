@@ -2,22 +2,8 @@
 
 ## Layout
 
-- `src/delta.cr` — entry point: requires, `VERSION`, top-level API (`Delta.diff`, `Delta.diff_lines`, `Delta.unified_diff`, `Delta.apply_patch`, `Delta.parse_patch`, `Delta.apply`).
-- `src/delta/edit.cr` — `Edit` op struct with nested `Edit::Kind` enum (`a_pos`/`a_len` into old, `b_pos`/`b_len` into new).
-- `src/delta/tokenizer.cr` — interns sequence elements / text lines to `Int32` tokens (`Tokenizer::Interner`, `Tokenizer::Lines` zero-copy `Bytes` line views); whitespace/case normalization for ignore options.
-- `src/delta/whitespace.cr` — `Whitespace` enum (`None`/`Amount`/`All`) for ignore options.
-- `src/delta/workspace.cr` — reusable scratch buffers (V-arrays, count maps, edit lists) for batch workloads.
-- `src/delta/algorithm.cr` — `Algorithm` contract plus shared `emit` (merge adjacent ops) and `normalize` (delete-before-insert ordering).
-- `src/delta/compaction.cr` — slides change groups to blank-line boundaries (git xdiff-style), on by default.
-- `src/delta/stat.cr` — insertion/deletion counts.
-- `src/delta/hunk.cr` — groups edits into context-bounded hunks.
-- `src/delta/unified.cr` — unified diff rendering (streaming to `IO`).
-- `src/delta/patch.cr` — unified diff parsing, all-or-nothing application with drift tolerance, fuzzy (`fuzz:`) apply, reverse patch, multi-file (`apply_to_dir`) apply; `Patch::Error`.
-- `src/delta/merge.cr` — three-way merge with conflict markers; `Merge::Result`.
-- `src/delta/words.cr` — whitespace-delimited word tokenizer and inline word-diff markup.
-
 ```
-.
+delta/
 ├─╴.gitignore
 ├─╴AGENTS.md
 ├─╴README.md
@@ -25,7 +11,7 @@
 ├─╴bench/                                 # `crystal run --release bench/delta/diff_bench.cr`, `bench/delta/unified_bench.cr`, and `bench/delta/memory_bench.cr`.
 ├─╴spec/                                  # `crystal spec`; round-trip properties hold for all three algorithms.
 ╰─╴src/
-   ├─╴delta.cr
+   ├─╴delta.cr                            # entry point: requires, `VERSION`, top-level API (`Delta.diff`, `Delta.diff_lines`, `Delta.unified_diff`, `Delta.apply_patch`, `Delta.parse_patch`, `Delta.apply`).
    ╰─╴delta/
       ├─╴algorithm.cr                     # `Algorithm` contract plus shared `emit` (merge adjacent ops) and `normalize` (delete-before-insert ordering).
       ├─╴compaction.cr                    # slides change groups to blank-line boundaries (git xdiff-style), on by default.
