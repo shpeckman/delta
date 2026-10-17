@@ -6,7 +6,9 @@ authors:
   - shpeckman
 
 description: |
-  ...
+  Fast diff/patch library: Myers, Histogram, and Patience algorithms over
+  generic sequences and text lines, structured edit lists, and git-compatible
+  unified diff rendering, parsing, and application.
   
 crystal: ">= 1.21.0"
 
