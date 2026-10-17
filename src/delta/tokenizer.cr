@@ -6,8 +6,9 @@ module Delta
     getter source : String
     getter offsets : Array(Int32)
     getter tokens : Slice(Int32)
+    getter blank_token : Int32?
 
-    def initialize(@source : String, @offsets : Array(Int32), @tokens : Slice(Int32))
+    def initialize(@source : String, @offsets : Array(Int32), @tokens : Slice(Int32), @blank_token : Int32? = nil)
     end
 
     def self.split(source : String) : Lines
