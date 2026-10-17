@@ -11,6 +11,7 @@ require "./delta/stat"
 require "./delta/hunk"
 require "./delta/unified"
 require "./delta/patch"
+require "./delta/edit_format"
 require "./delta/merge"
 require "./delta/words"
 
@@ -92,6 +93,18 @@ module Delta
 
   def self.parse_patch(patch : String) : Array(Patch::FilePatch)
     Patch.parse(patch)
+  end
+
+  def self.parse_edits(text : String, valid_files : Array(String)? = nil) : Array(EditFormat::FileEdit)
+    EditFormat.parse(text, valid_files)
+  end
+
+  def self.apply_edit(source : String, edit : EditFormat::FileEdit) : String
+    EditFormat.apply_file(source, edit)
+  end
+
+  def self.apply_edits(text : String, root : String) : Array(String)
+    EditFormat.apply(text, root)
   end
 
   def self.merge(base : String, ours : String, theirs : String, *,
