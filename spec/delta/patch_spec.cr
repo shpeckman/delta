@@ -1,5 +1,5 @@
 # spec/patch_spec.cr
-require "./spec_helper"
+require "../spec_helper"
 
 describe Delta::Patch do
   it "round-trips a simple change" do

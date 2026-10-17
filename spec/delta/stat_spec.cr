@@ -1,5 +1,5 @@
 # spec/stat_spec.cr
-require "./spec_helper"
+require "../spec_helper"
 
 describe Delta::Stat do
   it "counts insertions and deletions from an edit list" do

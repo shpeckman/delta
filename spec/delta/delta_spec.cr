@@ -1,5 +1,5 @@
 # spec/delta_spec.cr
-require "./spec_helper"
+require "../spec_helper"
 
 describe Delta do
   it "has a version" do

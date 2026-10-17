@@ -1,5 +1,5 @@
 # spec/unified_spec.cr
-require "./spec_helper"
+require "../spec_helper"
 
 describe "Delta.unified_diff" do
   it "returns an empty string for identical inputs" do

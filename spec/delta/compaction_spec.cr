@@ -1,5 +1,5 @@
 # spec/compaction_spec.cr
-require "./spec_helper"
+require "../spec_helper"
 
 describe Delta::Compaction do
   it "slides changes to the earliest position without blank lines" do

@@ -1,5 +1,5 @@
 # spec/histogram_spec.cr
-require "./spec_helper"
+require "../spec_helper"
 
 describe Delta::Histogram do
   it "returns no edits for empty inputs" do
