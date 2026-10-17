@@ -13,13 +13,13 @@ describe Delta do
 
     it "returns no edits for identical inputs" do
       Delta.diff_lines("a\nb\n", "a\nb\n").should eq [
-        Delta::Edit.new(Delta::Kind::Equal, 0, 2, 0, 2),
+        Delta::Edit.new(Delta::Edit::Kind::Equal, 0, 2, 0, 2),
       ]
     end
 
     it "treats a missing trailing newline as a change on the last line" do
       edits = Delta.diff_lines("a\nb\n", "a\nb")
-      edits.should_not eq [Delta::Edit.new(Delta::Kind::Equal, 0, 2, 0, 2)]
+      edits.should_not eq [Delta::Edit.new(Delta::Edit::Kind::Equal, 0, 2, 0, 2)]
     end
 
     it "handles CRLF line endings" do

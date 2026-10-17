@@ -20,9 +20,9 @@ describe Delta::Compaction do
     new   = "x\n\n1\n\n1\ny\n"
     edits = Delta.diff_lines(old, new)
     edits.should eq [
-      Delta::Edit.new(Delta::Kind::Equal, 0, 2, 0, 2),
-      Delta::Edit.new(Delta::Kind::Insert, 2, 0, 2, 2),
-      Delta::Edit.new(Delta::Kind::Equal, 2, 2, 4, 2),
+      Delta::Edit.new(Delta::Edit::Kind::Equal, 0, 2, 0, 2),
+      Delta::Edit.new(Delta::Edit::Kind::Insert, 2, 0, 2, 2),
+      Delta::Edit.new(Delta::Edit::Kind::Equal, 2, 2, 4, 2),
     ]
   end
 

@@ -45,11 +45,11 @@ describe Delta::Patch do
     old   = "a\nb\nc\n"
     new   = "a\nX\nc\n"
     patch = Delta.unified_diff(old, new)
-    expect_raises(Delta::PatchError) { Delta.apply_patch("totally\ndifferent\nfile\n", patch) }
+    expect_raises(Delta::Patch::Error) { Delta.apply_patch("totally\ndifferent\nfile\n", patch) }
   end
 
   it "raises PatchError for a patch without hunks" do
-    expect_raises(Delta::PatchError, "no hunks") { Delta.apply_patch("a\n", "junk\n") }
+    expect_raises(Delta::Patch::Error, "no hunks") { Delta.apply_patch("a\n", "junk\n") }
   end
 
   it "round-trips random string pairs through all algorithms" do

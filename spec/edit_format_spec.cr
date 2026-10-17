@@ -30,7 +30,7 @@ describe Delta::EditFormat do
   end
 
   it "raises when a whole block has no filename" do
-    expect_raises(Delta::EditFormatError, "no filename") do
+    expect_raises(Delta::EditFormat::Error, "no filename") do
       Delta.parse_edits("```\nx\n```\n")
     end
   end
@@ -79,7 +79,7 @@ describe Delta::EditFormat do
   it "raises when a SEARCH block does not match" do
     text  = "app.py\n```\n<<<<<<< SEARCH\nmissing\n=======\nx\n>>>>>>> REPLACE\n```\n"
     edits = Delta.parse_edits(text)
-    expect_raises(Delta::EditFormatError, "failed to match") do
+    expect_raises(Delta::EditFormat::Error, "failed to match") do
       Delta.apply_edit("nothing here\n", edits[0])
     end
   end
@@ -148,7 +148,7 @@ describe Delta::EditFormat do
     with_tempdir do |dir|
       File.write(File.join(dir, "f.py"), "a\nb\nc\n")
       text = "```diff\n--- a/f.py\n+++ b/f.py\n@@ -1,1 +1,1 @@\n-a\n+X\n@@ -9,1 +9,1 @@\n-missing\n+Y\n```\n"
-      expect_raises(Delta::EditFormatError) do
+      expect_raises(Delta::EditFormat::Error) do
         Delta.apply_edits(text, dir)
       end
       File.read(File.join(dir, "f.py")).should eq "a\nb\nc\n"
@@ -164,13 +164,13 @@ describe Delta::EditFormat do
   end
 
   it "rejects path traversal" do
-    expect_raises(Delta::EditFormatError, "traversal") do
+    expect_raises(Delta::EditFormat::Error, "traversal") do
       Delta.apply_edits("```diff\n--- a/../x\n+++ b/../x\n@@ -1,1 +1,1 @@\n-a\n+b\n```\n", Dir.tempdir)
     end
   end
 
   it "rejects absolute paths" do
-    expect_raises(Delta::EditFormatError, "absolute") do
+    expect_raises(Delta::EditFormat::Error, "absolute") do
       Delta.apply_edits("```diff\n--- /x\n+++ /x\n@@ -1,1 +1,1 @@\n-a\n+b\n```\n", Dir.tempdir)
     end
   end
@@ -232,7 +232,7 @@ describe Delta::EditFormat do
     replace = "l1\nl2\nNEW\nl4\nl5\nl6\nl7\nl8\nl9\nl10\n"
     text    = "f.py\n```\n<<<<<<< SEARCH\n" + search + "=======\n" + replace + ">>>>>>> REPLACE\n```\n"
     edits   = Delta.parse_edits(text)
-    expect_raises(Delta::EditFormatError) { Delta.apply_edit(src, edits[0]) }
+    expect_raises(Delta::EditFormat::Error) { Delta.apply_edit(src, edits[0]) }
     Delta.apply_edit(src, edits[0], fuzzy: true).should eq replace
   end
 
@@ -242,7 +242,7 @@ describe Delta::EditFormat do
     replace = "l1\nl2\nNEW\nl4\nl5\nl6\nl7\nl8\nl9\nl10\n"
     text    = "f.py\n```\n<<<<<<< SEARCH\n" + search + "=======\n" + replace + ">>>>>>> REPLACE\n```\n"
     edits   = Delta.parse_edits(text)
-    expect_raises(Delta::EditFormatError) { Delta.apply_edit(src, edits[0], fuzzy: true, threshold: 0.95) }
+    expect_raises(Delta::EditFormat::Error) { Delta.apply_edit(src, edits[0], fuzzy: true, threshold: 0.95) }
     Delta.apply_edit(src, edits[0], fuzzy: true, threshold: 0.85).should eq replace
   end
 end

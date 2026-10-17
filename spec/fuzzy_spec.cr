@@ -15,7 +15,7 @@ describe Delta::Patch do
       new   = "a\nb\nX\nd\ne\n"
       patch = Delta.unified_diff(old, new)
       fuzzy = "a\nbb\nc\nd\ne\n"
-      expect_raises(Delta::PatchError) { Delta.apply_patch(fuzzy, patch) }
+      expect_raises(Delta::Patch::Error) { Delta.apply_patch(fuzzy, patch) }
       Delta.apply_patch(fuzzy, patch, fuzz: 1).should eq "a\nbb\nX\nd\ne\n"
     end
 
@@ -24,7 +24,7 @@ describe Delta::Patch do
       new   = "a\nb\nX\nd\ne\n"
       patch = Delta.unified_diff(old, new)
       fuzzy = "a\nbb\nc\ndd\ne\n"
-      expect_raises(Delta::PatchError) { Delta.apply_patch(fuzzy, patch, fuzz: 1) }
+      expect_raises(Delta::Patch::Error) { Delta.apply_patch(fuzzy, patch, fuzz: 1) }
       Delta.apply_patch(fuzzy, patch, fuzz: 2).should eq "a\nbb\nX\ndd\ne\n"
     end
 
@@ -33,7 +33,7 @@ describe Delta::Patch do
       new     = "a\nb\nX\nd\ne\n"
       patch   = Delta.unified_diff(old, new)
       corrupt = "a\nb\ncc\nd\ne\n"
-      expect_raises(Delta::PatchError) { Delta.apply_patch(corrupt, patch, fuzz: 2) }
+      expect_raises(Delta::Patch::Error) { Delta.apply_patch(corrupt, patch, fuzz: 2) }
     end
   end
 end

@@ -72,7 +72,7 @@ describe Delta::Patch do
     with_tmpdir do |dir|
       File.write(File.join(dir, "m.txt"), "bye\nmore\n")
       patch = "--- a/m.txt\n+++ /dev/null\n@@ -1 +0,0 @@\n-bye\n"
-      expect_raises(Delta::PatchError) { Delta::Patch.apply_to_dir(patch, dir, strip: 1) }
+      expect_raises(Delta::Patch::Error) { Delta::Patch.apply_to_dir(patch, dir, strip: 1) }
       File.read(File.join(dir, "m.txt")).should eq "bye\nmore\n"
     end
   end
@@ -80,7 +80,7 @@ describe Delta::Patch do
   it "rejects path traversal" do
     with_tmpdir do |dir|
       patch = "--- /dev/null\n+++ a/../evil\n@@ -0,0 +1 @@\n+x\n"
-      expect_raises(Delta::PatchError) { Delta::Patch.apply_to_dir(patch, dir, strip: 1) }
+      expect_raises(Delta::Patch::Error) { Delta::Patch.apply_to_dir(patch, dir, strip: 1) }
       Dir.children(dir).should be_empty
     end
   end
@@ -88,7 +88,7 @@ describe Delta::Patch do
   it "rejects absolute paths" do
     with_tmpdir do |dir|
       patch = "--- /dev/null\n+++ /etc/evil\n@@ -0,0 +1 @@\n+x\n"
-      expect_raises(Delta::PatchError) { Delta::Patch.apply_to_dir(patch, dir, strip: 1) }
+      expect_raises(Delta::Patch::Error) { Delta::Patch.apply_to_dir(patch, dir, strip: 1) }
       Dir.children(dir).should be_empty
     end
   end
@@ -97,7 +97,7 @@ describe Delta::Patch do
     with_tmpdir do |dir|
       File.write(File.join(dir, "one.txt"), "old1\n")
       patch = "--- a/one.txt\n+++ b/one.txt\n@@ -1 +1 @@\n-old1\n+new1\n--- a/missing.txt\n+++ b/missing.txt\n@@ -1 +1 @@\n-old2\n+new2\n"
-      expect_raises(Delta::PatchError) { Delta::Patch.apply_to_dir(patch, dir, strip: 1) }
+      expect_raises(Delta::Patch::Error) { Delta::Patch.apply_to_dir(patch, dir, strip: 1) }
       File.read(File.join(dir, "one.txt")).should eq "old1\n"
     end
   end
