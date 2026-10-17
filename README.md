@@ -129,6 +129,23 @@ Delta.apply_edits(text, "/path/to/repo")           # apply all edits to files (a
 
 Pass `valid_files:` to `parse_edits` to resolve basename-only filenames against a known path list. `apply_edits` creates files with parent directories, is all-or-nothing, and rejects absolute paths and `..` traversal. Malformed or non-matching edits raise `Delta::EditFormatError`. `editor-diff` and `editor-whole` are prompt-only variants and parse as `diff` and `whole`.
 
+Enable a last-resort similarity match (opt-in, off by default) for noisy LLM output where a `SEARCH` block doesn't match exactly:
+
+```crystal
+Delta.apply_edit(text, edit, fuzzy: true)          # accept best match at >= 0.8 similarity
+Delta.apply_edit(text, edit, fuzzy: true, threshold: 0.9)
+```
+
+Render edits back out — the inverse of `parse_edits` — for feeding an LLM or round-tripping:
+
+```crystal
+Delta.render_whole("path/file.py", new_content)
+Delta.render_udiff(old, new, "a/f.py", "b/f.py")   # ```diff -fenced unified diff
+Delta.render_replace(old, new, "path/file.py")     # SEARCH/REPLACE blocks
+```
+
+`render_replace` emits one block per change group with surrounding context so every block locates its change; `render_udiff` reuses `unified_diff`. All three normalize a missing trailing newline (aider behaves the same), and `render_udiff`/`render_replace` return `""` when there is nothing to change.
+
 ## Diff stats
 
 ```crystal

@@ -14,7 +14,7 @@
 - `src/delta/hunk.cr` — groups edits into context-bounded hunks.
 - `src/delta/unified.cr` — unified diff rendering (streaming to `IO`).
 - `src/delta/patch.cr` — unified diff parsing, all-or-nothing application with drift tolerance, fuzzy (`fuzz:`) apply, reverse patch, multi-file (`apply_to_dir`) apply; `PatchError`.
-- `src/delta/edit_format.cr` — parses/applies aider-style edit formats (whole, SEARCH/REPLACE diff, fenced udiff); `EditFormatError`.
+- `src/delta/edit_format.cr` — parses/applies/renders aider-style edit formats (whole, SEARCH/REPLACE diff, fenced udiff); opt-in fuzzy search/replace; `EditFormatError`.
 - `src/delta/merge.cr` — three-way merge with conflict markers; `MergeResult`.
 - `src/delta/words.cr` — whitespace-delimited word tokenizer and inline word-diff markup.
 - `spec/` — `crystal spec`; round-trip properties hold for all three algorithms.
