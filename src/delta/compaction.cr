@@ -5,13 +5,17 @@ module Delta
   module Compaction
     extend self
 
-    def compact(edits : Array(Edit), a : Slice(Int32), b : Slice(Int32), blank : Int32?) : Array(Edit)
-      groups = extract_groups(edits)
-      result = [] of Edit
+    def compact(edits : Array(Edit), a : Slice(Int32), b : Slice(Int32), blank : Int32?,
+                out : Array(Edit)? = nil,
+                groups : Array({Int32, Int32, Int32, Int32})? = nil) : Array(Edit)
+      gs = groups || ([] of {Int32, Int32, Int32, Int32})
+      extract_groups(edits, gs)
+      result = out || ([] of Edit)
+      result.clear
       anchor_a = 0
       anchor_b = 0
 
-      groups.each_with_index do |group, k|
+      gs.each_with_index do |group, k|
         a_s, a_e, b_s, b_e = group
         alen = a_e - a_s
         blen = b_e - b_s
