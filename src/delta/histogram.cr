@@ -49,70 +49,69 @@ module Delta
       elsif n > 0 && m > 0
         if n + m <= MIN_HISTOGRAM
           myers.diff_region(a, am, ae, b, bm, be, vf, vb, edits)
-          emit(edits, Kind::Equal, ae, s, be, s) if s > 0
-          return
-        end
-        counts_a.clear
-        counts_b.clear
-        i = am
-        while i < ae
-          counts_a[a[i]] += 1
-          i += 1
-        end
-        j = bm
-        while j < be
-          counts_b[b[j]] += 1
-          j += 1
-        end
-
-        best_tok = -1
-        best_cnt = Int32::MAX
-        counts_b.each do |tok, cb|
-          if ca = counts_a[tok]?
-            total = ca + cb
-            if total < best_cnt
-              best_tok = tok
-              best_cnt = total
-            end
-          end
-        end
-
-        if best_tok == -1 || best_cnt > MAX_CHAIN
-          myers.diff_region(a, am, ae, b, bm, be, vf, vb, edits)
         else
-          apos = [] of Int32
-          bpos = [] of Int32
+          counts_a.clear
+          counts_b.clear
           i = am
           while i < ae
-            apos << i if a[i] == best_tok
+            counts_a[a[i]] += 1
             i += 1
           end
           j = bm
           while j < be
-            bpos << j if b[j] == best_tok
+            counts_b[b[j]] += 1
             j += 1
           end
 
-          ai = apos[0]
-          bi = bpos[0]
-          best_shift = ((apos[0] - am) - (bpos[0] - bm)).abs
-          bidx = 0
-          apos.each do |x|
-            while bidx + 1 < bpos.size &&
-                  ((x - am) - (bpos[bidx + 1] - bm)).abs <= ((x - am) - (bpos[bidx] - bm)).abs
-              bidx += 1
-            end
-            shift = ((x - am) - (bpos[bidx] - bm)).abs
-            if shift < best_shift
-              best_shift = shift
-              ai = x
-              bi = bpos[bidx]
+          best_tok = -1
+          best_cnt = Int32::MAX
+          counts_b.each do |tok, cb|
+            if ca = counts_a[tok]?
+              total = ca + cb
+              if total < best_cnt
+                best_tok = tok
+                best_cnt = total
+              end
             end
           end
 
-          rec(a, am, ai, b, bm, bi, myers, vf, vb, counts_a, counts_b, edits)
-          emit(edits, Kind::Equal, ai, 1, bi, 1)
-          rec(a, ai + 1, ae, b, bi + 1, be, myers, vf, vb, counts_a, counts_b, edits)
+          if best_tok == -1 || best_cnt > MAX_CHAIN
+            myers.diff_region(a, am, ae, b, bm, be, vf, vb, edits)
+          else
+            apos = [] of Int32
+            bpos = [] of Int32
+            i = am
+            while i < ae
+              apos << i if a[i] == best_tok
+              i += 1
+            end
+            j = bm
+            while j < be
+              bpos << j if b[j] == best_tok
+              j += 1
+            end
+
+            ai = apos[0]
+            bi = bpos[0]
+            best_shift = ((apos[0] - am) - (bpos[0] - bm)).abs
+            bidx = 0
+            apos.each do |x|
+              while bidx + 1 < bpos.size &&
+                    ((x - am) - (bpos[bidx + 1] - bm)).abs <= ((x - am) - (bpos[bidx] - bm)).abs
+                bidx += 1
+              end
+              shift = ((x - am) - (bpos[bidx] - bm)).abs
+              if shift < best_shift
+                best_shift = shift
+                ai = x
+                bi = bpos[bidx]
+              end
+            end
+
+            rec(a, am, ai, b, bm, bi, myers, vf, vb, counts_a, counts_b, edits)
+            emit(edits, Kind::Equal, ai, 1, bi, 1)
+            rec(a, ai + 1, ae, b, bi + 1, be, myers, vf, vb, counts_a, counts_b, edits)
+          end
         end
       end
 
