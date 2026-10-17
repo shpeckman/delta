@@ -1,6 +1,7 @@
 # src/delta.cr
 require "./delta/edit"
 require "./delta/tokenizer"
+require "./delta/whitespace"
 require "./delta/workspace"
 require "./delta/algorithm"
 require "./delta/myers"

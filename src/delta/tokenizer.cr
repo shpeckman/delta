@@ -1,40 +1,8 @@
 # src/delta/tokenizer.cr
+require "./whitespace"
+
 module Delta
   NL = 0x0Au8
-
-  enum Whitespace : UInt8
-    None
-    Amount
-    All
-  end
-
-  struct Lines
-    getter source      : String
-    getter offsets     : Array(Int32)
-    getter tokens      : Slice(Int32)
-    getter blank_token : Int32?
-
-    def initialize(@source : String, @offsets : Array(Int32), @tokens : Slice(Int32), @blank_token : Int32? = nil)
-    end
-
-    def self.split(source : String) : Lines
-      new(source, Tokenizer.offsets(source), Slice(Int32).new(0))
-    end
-
-    def size : Int32
-      offsets.size
-    end
-
-    def line_at(index : Int32) : Bytes
-      start = offsets[index]
-      stop  = index + 1 < offsets.size ? offsets[index + 1] : source.bytesize
-      source.to_slice[start, stop - start]
-    end
-
-    def each_line(& : Bytes ->) : Nil
-      size.times { |i| yield line_at(i) }
-    end
-  end
 
   module Tokenizer
     extend self
@@ -52,6 +20,34 @@ module Delta
           @next += 1
           t
         end
+      end
+    end
+
+    struct Lines
+      getter source      : String
+      getter offsets     : Array(Int32)
+      getter tokens      : Slice(Int32)
+      getter blank_token : Int32?
+
+      def initialize(@source : String, @offsets : Array(Int32), @tokens : Slice(Int32), @blank_token : Int32? = nil)
+      end
+
+      def self.split(source : String) : Lines
+        new(source, Tokenizer.offsets(source), Slice(Int32).new(0))
+      end
+
+      def size : Int32
+        offsets.size
+      end
+
+      def line_at(index : Int32) : Bytes
+        start = offsets[index]
+        stop  = index + 1 < offsets.size ? offsets[index + 1] : source.bytesize
+        source.to_slice[start, stop - start]
+      end
+
+      def each_line(& : Bytes ->) : Nil
+        size.times { |i| yield line_at(i) }
       end
     end
 
