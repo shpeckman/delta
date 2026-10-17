@@ -52,7 +52,7 @@ module Delta
                              n : Int32, m : Int32, vf : Slice(Int32), vb : Slice(Int32)) : {Int32, Int32}
       max = n + m
       delta = n - m
-      off = max + 1
+      off = max + (max + 1) // 2 + 1
       half = (max + 1) // 2
 
       d = 0
