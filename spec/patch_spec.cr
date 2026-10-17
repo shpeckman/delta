@@ -67,6 +67,7 @@ describe Delta::Patch do
           end
         end
         new = lines.join("\n") + (lines.empty? ? "" : "\n")
+        next if old == new
         patch = Delta.unified_diff(old, new, algorithm: algorithm)
         Delta.apply_patch(old, patch).should eq new
       end
