@@ -56,9 +56,9 @@ module Delta
     def merge(base : String, ours : String, theirs : String,
               ours_label : String = "ours", theirs_label : String = "theirs",
               algorithm : Algorithm = Myers.new) : Result
-      lb = Lines.split(base)
-      lo = Lines.split(ours)
-      lt = Lines.split(theirs)
+      lb = Tokenizer::Lines.split(base)
+      lo = Tokenizer::Lines.split(ours)
+      lt = Tokenizer::Lines.split(theirs)
       co = changes(Delta.diff_lines(base, ours, algorithm: algorithm))
       ct = changes(Delta.diff_lines(base, theirs, algorithm: algorithm))
 
@@ -127,7 +127,7 @@ module Delta
       Result.new(text, conflicts)
     end
 
-    private def replay(base : Lines, side : Lines, gstart : Int32, gend : Int32, changes : Array(Change)) : String
+    private def replay(base : Tokenizer::Lines, side : Tokenizer::Lines, gstart : Int32, gend : Int32, changes : Array(Change)) : String
       String.build do |io|
         pos = gstart
         changes.each do |ch|

@@ -217,8 +217,8 @@ module Delta
       edits = Delta.diff_lines(old, new, algorithm: algorithm)
       hunks = Hunk.build(edits, Math.max(1, context))
       return "" if hunks.empty?
-      la = Lines.split(old)
-      lb = Lines.split(new)
+      la = Tokenizer::Lines.split(old)
+      lb = Tokenizer::Lines.split(new)
       String.build do |io|
         io << path << '\n'
         io << FENCE << '\n'
@@ -512,11 +512,11 @@ module Delta
       path
     end
 
-    private def write_line_block(io : IO, lines : Lines, start : Int32, count : Int32) : Nil
+    private def write_line_block(io : IO, lines : Tokenizer::Lines, start : Int32, count : Int32) : Nil
       count.times do |i|
         content = lines.line_at(start + i)
         io.write(content)
-        io << '\n' unless content[-1] == NL
+        io << '\n' unless content[-1] == '\n'.ord.to_u8
       end
     end
 

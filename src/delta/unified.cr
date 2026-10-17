@@ -3,14 +3,14 @@ module Delta
   module Unified
     extend self
 
-    def render(old_lines : Lines, new_lines : Lines, hunks : Array(Hunk),
+    def render(old_lines : Tokenizer::Lines, new_lines : Tokenizer::Lines, hunks : Array(Hunk),
                old_path : String?, new_path : String?) : String
       String.build do |io|
         render(io, old_lines, new_lines, hunks, old_path, new_path)
       end
     end
 
-    def render(io : IO, old_lines : Lines, new_lines : Lines, hunks : Array(Hunk),
+    def render(io : IO, old_lines : Tokenizer::Lines, new_lines : Tokenizer::Lines, hunks : Array(Hunk),
                old_path : String?, new_path : String?) : Nil
       return if hunks.empty?
       if old_path && new_path
@@ -38,12 +38,12 @@ module Delta
       io << ',' << count unless count == 1
     end
 
-    private def write_lines(io : IO, lines : Lines, start : Int32, count : Int32, prefix : Char) : Nil
+    private def write_lines(io : IO, lines : Tokenizer::Lines, start : Int32, count : Int32, prefix : Char) : Nil
       count.times do |i|
         io << prefix
         content = lines.line_at(start + i)
         io.write(content)
-        unless content[-1] == NL
+        unless content[-1] == '\n'.ord.to_u8
           io << '\n'
           io << "\\ No newline at end of file" << '\n'
         end
