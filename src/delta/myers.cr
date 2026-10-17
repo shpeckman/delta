@@ -12,15 +12,15 @@ module Delta
       return edits if max == 0
       if ws
         vf, vb = ws.v_arrays(max)
-        out = ws.normalized
+        dest = ws.normalized
       else
         bound = max + (max + 1) // 2
         vf = Slice(Int32).new(2 * bound + 3, 0)
         vb = Slice(Int32).new(2 * bound + 3, 0)
-        out = [] of Edit
+        dest = [] of Edit
       end
       diff_region(a, 0, a.size, b, 0, b.size, vf, vb, edits)
-      normalize(edits, out)
+      normalize(edits, dest)
     end
 
     def diff_region(a : Slice(Int32), a_lo : Int32, a_hi : Int32,

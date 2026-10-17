@@ -17,31 +17,31 @@ module Delta
       end
     end
 
-    protected def normalize(edits : Array(Edit), out : Array(Edit)) : Array(Edit)
-      out.clear
+    protected def normalize(edits : Array(Edit), dest : Array(Edit)) : Array(Edit)
+      dest.clear
       i = 0
       while i < edits.size
         e = edits[i]
         if e.kind.insert? && i + 1 < edits.size &&
            (nxt = edits[i + 1]).kind.delete? &&
            nxt.a_pos == e.a_pos && nxt.b_pos == e.b_pos + e.b_len
-          push(out, nxt)
-          push(out, e)
+          push(dest, nxt)
+          push(dest, e)
           i += 2
         else
-          push(out, e)
+          push(dest, e)
           i += 1
         end
       end
-      out
+      dest
     end
 
-    private def push(out : Array(Edit), e : Edit) : Nil
-      if (last = out.last?) && last.kind == e.kind &&
+    private def push(dest : Array(Edit), e : Edit) : Nil
+      if (last = dest.last?) && last.kind == e.kind &&
          last.a_pos + last.a_len == e.a_pos && last.b_pos + last.b_len == e.b_pos
-        out[-1] = Edit.new(e.kind, last.a_pos, last.a_len + e.a_len, last.b_pos, last.b_len + e.b_len)
+        dest[-1] = Edit.new(e.kind, last.a_pos, last.a_len + e.a_len, last.b_pos, last.b_len + e.b_len)
       else
-        out << e
+        dest << e
       end
     end
   end

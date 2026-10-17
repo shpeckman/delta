@@ -6,11 +6,11 @@ module Delta
     extend self
 
     def compact(edits : Array(Edit), a : Slice(Int32), b : Slice(Int32), blank : Int32?,
-                out : Array(Edit)? = nil,
+                dest : Array(Edit)? = nil,
                 groups : Array({Int32, Int32, Int32, Int32})? = nil) : Array(Edit)
       gs = groups || ([] of {Int32, Int32, Int32, Int32})
       extract_groups(edits, gs)
-      result = out || ([] of Edit)
+      result = dest || ([] of Edit)
       result.clear
       anchor_a = 0
       anchor_b = 0

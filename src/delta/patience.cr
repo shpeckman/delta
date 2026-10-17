@@ -14,7 +14,7 @@ module Delta
         vf, vb = ws.v_arrays(max)
         counts_a, counts_b = ws.counts
         bpos_map = ws.bpos_map
-        out = ws.normalized
+        dest = ws.normalized
       else
         bound = max + (max + 1) // 2
         vf = Slice(Int32).new(2 * bound + 3, 0)
@@ -22,10 +22,10 @@ module Delta
         counts_a = Hash(Int32, Int32).new(0)
         counts_b = Hash(Int32, Int32).new(0)
         bpos_map = Hash(Int32, Int32).new
-        out = [] of Edit
+        dest = [] of Edit
       end
       rec(a, 0, a.size, b, 0, b.size, Myers.new, vf, vb, counts_a, counts_b, bpos_map, edits)
-      normalize(edits, out)
+      normalize(edits, dest)
     end
 
     private def rec(a : Slice(Int32), a_lo : Int32, a_hi : Int32,

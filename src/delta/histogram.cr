@@ -16,17 +16,17 @@ module Delta
       if ws
         vf, vb = ws.v_arrays(max)
         counts_a, counts_b = ws.counts
-        out = ws.normalized
+        dest = ws.normalized
       else
         bound = max + (max + 1) // 2
         vf = Slice(Int32).new(2 * bound + 3, 0)
         vb = Slice(Int32).new(2 * bound + 3, 0)
         counts_a = Hash(Int32, Int32).new(0)
         counts_b = Hash(Int32, Int32).new(0)
-        out = [] of Edit
+        dest = [] of Edit
       end
       rec(a, 0, a.size, b, 0, b.size, Myers.new, vf, vb, counts_a, counts_b, edits)
-      normalize(edits, out)
+      normalize(edits, dest)
     end
 
     private def rec(a : Slice(Int32), a_lo : Int32, a_hi : Int32,
