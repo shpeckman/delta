@@ -22,7 +22,7 @@ puts "Diff engine allocation (pre-tokenized, 50k lines):"
   algorithm.diff(tokens_a, tokens_b, ws)
   without_ws = Benchmark.memory { algorithm.diff(tokens_a, tokens_b) }
   with_ws = Benchmark.memory { algorithm.diff(tokens_a, tokens_b, ws) }
-  puts "  %-9s  without_ws ws %8s   with_ws ws %8s" % {name, human(without_ws), human(with_ws)}
+  puts "  %-9s  without ws %8s   with ws %8s" % {name, human(without_ws), human(with_ws)}
 end
 
 puts "\nFull diff_lines allocation (includes tokenization):"
