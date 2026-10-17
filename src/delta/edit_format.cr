@@ -96,7 +96,7 @@ module Delta
           if filename.nil?
             raise Error.new("missing filename before SEARCH/REPLACE block")
           end
-          current  = filename
+          current = filename
           i += 1
           original = [] of String
           while i < lines.size && !DIVIDER.matches?(lines[i].strip)
@@ -142,7 +142,7 @@ module Delta
       result = source
       edit.blocks.each do |block|
         result = search_replace(result, block.search, block.replace, fuzzy: fuzzy, threshold: threshold) ||
-          raise Error.new(block_error(edit.path, block))
+                 raise Error.new(block_error(edit.path, block))
       end
       result
     end
@@ -171,7 +171,7 @@ module Delta
     def search_replace(source : String, before : String, after : String, *, fuzzy : Bool = false, threshold : Float64 = 0.8) : String?
       return source + after if before.strip.empty?
       whole, whole_lines = prep(source)
-      part, part_lines   = prep(before)
+      part, part_lines = prep(before)
       replace, replace_lines = prep(after)
 
       if res = perfect_replace(whole_lines, part_lines, replace_lines)
@@ -309,7 +309,7 @@ module Delta
       i     = 0
       while i < lines.size
         if lines[i].starts_with?("--- ") && i + 1 < lines.size && lines[i + 1].starts_with?("+++ ")
-          path   = udiff_path(lines[i + 1], lines[i])
+          path = udiff_path(lines[i + 1], lines[i])
           i += 2
           blocks = [] of Block
           while i < lines.size
@@ -392,8 +392,8 @@ module Delta
       part_lines.each { |p| leading << (p.size - p.lstrip.size) if p.strip != "" }
       replace_lines.each { |p| leading << (p.size - p.lstrip.size) if p.strip != "" }
       if !leading.empty? && leading.min != 0
-        num = leading.min
-        part_lines = part_lines.map { |p| p.strip != "" ? p[num..] : p }
+        num           = leading.min
+        part_lines    = part_lines.map { |p| p.strip != "" ? p[num..] : p }
         replace_lines = replace_lines.map { |p| p.strip != "" ? p[num..] : p }
       end
       part_len = part_lines.size
