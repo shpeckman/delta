@@ -21,11 +21,11 @@ describe "Delta.unified_diff" do
   end
 
   it "splits distant changes into separate hunks" do
-    old = (1..20).map(&.to_s).join("\n") + "\n"
+    old       = (1..20).map(&.to_s).join("\n") + "\n"
     new_lines = (1..20).map(&.to_s)
     new_lines[2] = "X"
     new_lines[17] = "Y"
-    new = new_lines.join("\n") + "\n"
+    new   = new_lines.join("\n") + "\n"
     patch = Delta.unified_diff(old, new, context: 2)
     patch.scan(/@@ /).size.should eq 2
     patch.should contain "@@ -1,5 +1,5 @@"
@@ -33,8 +33,8 @@ describe "Delta.unified_diff" do
   end
 
   it "merges nearby changes into one hunk" do
-    old = "1\n2\n3\n4\n5\n"
-    new = "1\nX\n3\nY\n5\n"
+    old   = "1\n2\n3\n4\n5\n"
+    new   = "1\nX\n3\nY\n5\n"
     patch = Delta.unified_diff(old, new, context: 2)
     patch.scan(/@@ /).size.should eq 1
   end

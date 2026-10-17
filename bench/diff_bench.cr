@@ -15,18 +15,18 @@ def churn(lines : Array(String), rnd : Random, rate : Float64) : Array(String)
   result
 end
 
-rnd = Random.new(2024)
-small_a = (1..100).map { |i| "line #{i % 50}" }
-small_b = churn(small_a, rnd, 0.05)
-large_a = (1..50_000).map { |i| "line #{i % 5000}" }
-large_b = churn(large_a, rnd, 0.05)
+rnd       = Random.new(2024)
+small_a   = (1..100).map { |i| "line #{i % 50}" }
+small_b   = churn(small_a, rnd, 0.05)
+large_a   = (1..50_000).map { |i| "line #{i % 5000}" }
+large_b   = churn(large_a, rnd, 0.05)
 rewrite_a = (1..10_000).map { |i| "old #{i}" }
 rewrite_b = (1..10_000).map { |i| "new #{i}" }
 
-small_old = small_a.join("\n") + "\n"
-small_new = small_b.join("\n") + "\n"
-large_old = large_a.join("\n") + "\n"
-large_new = large_b.join("\n") + "\n"
+small_old   = small_a.join("\n") + "\n"
+small_new   = small_b.join("\n") + "\n"
+large_old   = large_a.join("\n") + "\n"
+large_new   = large_b.join("\n") + "\n"
 rewrite_old = rewrite_a.join("\n") + "\n"
 rewrite_new = rewrite_b.join("\n") + "\n"
 

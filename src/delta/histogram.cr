@@ -9,7 +9,7 @@ module Delta
     end
 
     def diff(a : Slice(Int32), b : Slice(Int32), ws : Workspace?) : Array(Edit)
-      max = a.size + b.size
+      max   = a.size + b.size
       edits = ws ? ws.edits : [] of Edit
       edits.clear
       return edits if max == 0
@@ -18,12 +18,12 @@ module Delta
         counts_a, counts_b = ws.counts
         dest = ws.normalized
       else
-        bound = max + (max + 1) // 2
-        vf = Slice(Int32).new(2 * bound + 3, 0)
-        vb = Slice(Int32).new(2 * bound + 3, 0)
+        bound    = max + (max + 1) // 2
+        vf       = Slice(Int32).new(2 * bound + 3, 0)
+        vb       = Slice(Int32).new(2 * bound + 3, 0)
         counts_a = Hash(Int32, Int32).new(0)
         counts_b = Hash(Int32, Int32).new(0)
-        dest = [] of Edit
+        dest     = [] of Edit
       end
       rec(a, 0, a.size, b, 0, b.size, Myers.new, vf, vb, counts_a, counts_b, edits)
       normalize(edits, dest)
@@ -47,8 +47,8 @@ module Delta
         s += 1
       end
 
-      n = n0 - p - s
-      m = m0 - p - s
+      n  = n0 - p - s
+      m  = m0 - p - s
       am = a_lo + p
       bm = b_lo + p
       ae = a_hi - s
@@ -94,7 +94,7 @@ module Delta
           else
             apos = [] of Int32
             bpos = [] of Int32
-            i = am
+            i    = am
             while i < ae
               apos << i if a[i] == best_tok
               i += 1
@@ -105,10 +105,10 @@ module Delta
               j += 1
             end
 
-            ai = apos[0]
-            bi = bpos[0]
+            ai         = apos[0]
+            bi         = bpos[0]
             best_shift = ((apos[0] - am) - (bpos[0] - bm)).abs
-            bidx = 0
+            bidx       = 0
             apos.each do |x|
               while bidx + 1 < bpos.size &&
                     ((x - am) - (bpos[bidx + 1] - bm)).abs <= ((x - am) - (bpos[bidx] - bm)).abs
@@ -117,8 +117,8 @@ module Delta
               shift = ((x - am) - (bpos[bidx] - bm)).abs
               if shift < best_shift
                 best_shift = shift
-                ai = x
-                bi = bpos[bidx]
+                ai         = x
+                bi         = bpos[bidx]
               end
             end
 

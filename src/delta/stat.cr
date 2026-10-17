@@ -4,7 +4,7 @@ require "./edit"
 module Delta
   struct Stat
     getter insertions : Int32
-    getter deletions : Int32
+    getter deletions  : Int32
 
     def initialize(@insertions : Int32, @deletions : Int32)
     end

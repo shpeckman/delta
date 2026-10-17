@@ -5,13 +5,13 @@ module Delta
     getter a_count : Int32
     getter b_start : Int32
     getter b_count : Int32
-    getter ops : Array(Edit)
+    getter ops     : Array(Edit)
 
     def initialize(@ops : Array(Edit))
       @a_start = @ops.first.a_pos
       @b_start = @ops.first.b_pos
-      ac = 0
-      bc = 0
+      ac       = 0
+      bc       = 0
       @ops.each do |e|
         ac += e.a_len
         bc += e.b_len
@@ -24,8 +24,8 @@ module Delta
 
     def self.build(edits : Array(Edit), context : Int32) : Array(Hunk)
       hunks = [] of Hunk
-      i = 0
-      n = edits.size
+      i     = 0
+      n     = edits.size
       while i < n
         if edits[i].kind.equal?
           i += 1
@@ -34,7 +34,7 @@ module Delta
 
         ops = [] of Edit
         if i > 0
-          pe = edits[i - 1]
+          pe   = edits[i - 1]
           take = Math.min(context, pe.a_len)
           ops << Edit.new(Kind::Equal, pe.a_pos + pe.a_len - take, take,
             pe.b_pos + pe.b_len - take, take) if take > 0

@@ -3,9 +3,9 @@ require "./spec_helper"
 
 describe Delta::Compaction do
   it "slides changes to the earliest position without blank lines" do
-    old = "1\n2\n1\n2\n3\n"
-    new = "1\n2\n1\n2\n1\n2\n3\n"
-    edits = Delta.diff_lines(old, new)
+    old     = "1\n2\n1\n2\n3\n"
+    new     = "1\n2\n1\n2\n1\n2\n3\n"
+    edits   = Delta.diff_lines(old, new)
     inserts = edits.select(&.kind.insert?)
     inserts.size.should eq 1
     inserts[0].a_pos.should eq 0
@@ -16,8 +16,8 @@ describe Delta::Compaction do
   end
 
   it "prefers a blank-line boundary over an earlier position" do
-    old = "x\n\n1\ny\n"
-    new = "x\n\n1\n\n1\ny\n"
+    old   = "x\n\n1\ny\n"
+    new   = "x\n\n1\n\n1\ny\n"
     edits = Delta.diff_lines(old, new)
     edits.should eq [
       Delta::Edit.new(Delta::Kind::Equal, 0, 2, 0, 2),
@@ -27,8 +27,8 @@ describe Delta::Compaction do
   end
 
   it "does not shift changes when compact is false" do
-    old = "1\n2\n1\n2\n3\n"
-    new = "1\n2\n1\n2\n1\n2\n3\n"
+    old   = "1\n2\n1\n2\n3\n"
+    new   = "1\n2\n1\n2\n1\n2\n3\n"
     edits = Delta.diff_lines(old, new, compact: false)
     Delta.apply(old.lines, new.lines, edits).should eq new.lines
   end
@@ -36,8 +36,8 @@ describe Delta::Compaction do
   it "keeps reconstruction valid for random repetitive inputs" do
     rnd = Random.new(5)
     100.times do
-      a = Array.new(rnd.rand(60)) { rnd.rand(3) }
-      b = Array.new(rnd.rand(60)) { rnd.rand(3) }
+      a     = Array.new(rnd.rand(60)) { rnd.rand(3) }
+      b     = Array.new(rnd.rand(60)) { rnd.rand(3) }
       edits = Delta.diff(a, b)
       Delta.apply(a, b, edits).should eq b
       plain = Delta.diff(a, b, compact: false)
@@ -46,10 +46,10 @@ describe Delta::Compaction do
   end
 
   it "keeps unified diffs valid after compaction" do
-    rnd = Random.new(11)
+    rnd  = Random.new(11)
     pool = (0...8).map { |i| "line #{i}" }
     50.times do
-      old = (0...rnd.rand(50)).map { pool[rnd.rand(pool.size)] }.join("\n") + "\n"
+      old   = (0...rnd.rand(50)).map { pool[rnd.rand(pool.size)] }.join("\n") + "\n"
       lines = old.lines
       rnd.rand(8).times do
         if rnd.rand(2) == 0 && !lines.empty?

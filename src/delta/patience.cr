@@ -6,7 +6,7 @@ module Delta
     end
 
     def diff(a : Slice(Int32), b : Slice(Int32), ws : Workspace?) : Array(Edit)
-      max = a.size + b.size
+      max   = a.size + b.size
       edits = ws ? ws.edits : [] of Edit
       edits.clear
       return edits if max == 0
@@ -14,15 +14,15 @@ module Delta
         vf, vb = ws.v_arrays(max)
         counts_a, counts_b = ws.counts
         bpos_map = ws.bpos_map
-        dest = ws.normalized
+        dest     = ws.normalized
       else
-        bound = max + (max + 1) // 2
-        vf = Slice(Int32).new(2 * bound + 3, 0)
-        vb = Slice(Int32).new(2 * bound + 3, 0)
+        bound    = max + (max + 1) // 2
+        vf       = Slice(Int32).new(2 * bound + 3, 0)
+        vb       = Slice(Int32).new(2 * bound + 3, 0)
         counts_a = Hash(Int32, Int32).new(0)
         counts_b = Hash(Int32, Int32).new(0)
         bpos_map = Hash(Int32, Int32).new
-        dest = [] of Edit
+        dest     = [] of Edit
       end
       rec(a, 0, a.size, b, 0, b.size, Myers.new, vf, vb, counts_a, counts_b, bpos_map, edits)
       normalize(edits, dest)
@@ -46,8 +46,8 @@ module Delta
         s += 1
       end
 
-      n = n0 - p - s
-      m = m0 - p - s
+      n  = n0 - p - s
+      m  = m0 - p - s
       am = a_lo + p
       bm = b_lo + p
       ae = a_hi - s
@@ -77,7 +77,7 @@ module Delta
         end
 
         uniques = [] of {Int32, Int32}
-        i = am
+        i       = am
         while i < ae
           tok = a[i]
           if counts_a[tok] == 1 && counts_b[tok]? == 1
@@ -107,9 +107,9 @@ module Delta
 
     private def lis(pairs : Array({Int32, Int32})) : Array({Int32, Int32})
       tails = [] of Int32
-      prev = Array(Int32).new(pairs.size, -1)
+      prev  = Array(Int32).new(pairs.size, -1)
       pairs.each_with_index do |pair, idx|
-        y = pair[1]
+        y  = pair[1]
         lo = 0
         hi = tails.size
         while lo < hi

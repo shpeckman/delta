@@ -6,7 +6,7 @@ module Delta
     extend self
 
     def compact(edits : Array(Edit), a : Slice(Int32), b : Slice(Int32), blank : Int32?,
-                dest : Array(Edit)? = nil,
+                dest   : Array(Edit)? = nil,
                 groups : Array({Int32, Int32, Int32, Int32})? = nil) : Array(Edit)
       gs = groups || ([] of {Int32, Int32, Int32, Int32})
       extract_groups(edits, gs)
@@ -44,14 +44,14 @@ module Delta
           down += 1
         end
 
-        best_d = 0
+        best_d     = 0
         best_score = score(a, top_as, top_as + alen, blank)
-        d = 1
+        d          = 1
         while d <= down
           s = score(a, top_as + d, top_as + d + alen, blank)
           if s > best_score
             best_score = s
-            best_d = d
+            best_d     = d
           end
           d += 1
         end
@@ -84,7 +84,7 @@ module Delta
         b_s = edits[i].b_pos
         b_e = edits[i].b_pos + edits[i].b_len
         while i < edits.size && !edits[i].kind.equal?
-          e = edits[i]
+          e   = edits[i]
           a_s = Math.min(a_s, e.a_pos)
           a_e = Math.max(a_e, e.a_pos + e.a_len)
           b_s = Math.min(b_s, e.b_pos)

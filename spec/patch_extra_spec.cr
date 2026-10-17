@@ -15,7 +15,7 @@ end
 
 describe Delta::Patch do
   it "reverses a one-hunk patch" do
-    patch = "--- a/f\n+++ b/f\n@@ -1 +1 @@\n-old\n+new\n"
+    patch    = "--- a/f\n+++ b/f\n@@ -1 +1 @@\n-old\n+new\n"
     reversed = "--- b/f\n+++ a/f\n@@ -1 +1 @@\n+old\n-new\n"
     Delta::Patch.reverse(patch).should eq reversed
     Delta::Patch.apply("new\n", reversed).should eq "old\n"

@@ -4,7 +4,7 @@ require "./spec_helper"
 describe Delta::Stat do
   it "counts insertions and deletions from an edit list" do
     edits = Delta.diff_lines("a\nb\nc\n", "a\nX\nY\nc\n")
-    stat = Delta.stat(edits)
+    stat  = Delta.stat(edits)
     stat.insertions.should eq 2
     stat.deletions.should eq 1
     stat.total.should eq 3
