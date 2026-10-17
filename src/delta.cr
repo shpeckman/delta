@@ -7,6 +7,7 @@ require "./delta/histogram"
 require "./delta/patience"
 require "./delta/hunk"
 require "./delta/unified"
+require "./delta/patch"
 
 module Delta
   VERSION = {{ `shards version "#{__DIR__}/.."`.chomp.stringify }}

@@ -10,7 +10,7 @@ module Delta
 
     struct Line
       getter kind : Kind
-      property content : String
+      getter content : String
 
       def initialize(@kind : Kind, @content : String)
       end
