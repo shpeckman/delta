@@ -41,14 +41,14 @@ describe Delta::Patch do
     Delta.apply_patch(drifted, patch).should eq "p\nq\n" + new
   end
 
-  it "raises PatchError when context does not match" do
+  it "raises Patch::Error when context does not match" do
     old   = "a\nb\nc\n"
     new   = "a\nX\nc\n"
     patch = Delta.unified_diff(old, new)
     expect_raises(Delta::Patch::Error) { Delta.apply_patch("totally\ndifferent\nfile\n", patch) }
   end
 
-  it "raises PatchError for a patch without hunks" do
+  it "raises Patch::Error for a patch without hunks" do
     expect_raises(Delta::Patch::Error, "no hunks") { Delta.apply_patch("a\n", "junk\n") }
   end
 

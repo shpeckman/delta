@@ -50,7 +50,7 @@ patch = Delta.unified_diff(old_text, new_text,
   new_path: "b/file.cr")
 ```
 
-Parse and apply a unified diff (validates all hunks before writing; raises `Delta::PatchError` on mismatch; tolerates line-number drift):
+Parse and apply a unified diff (validates all hunks before writing; raises `Delta::Patch::Error` on mismatch; tolerates line-number drift):
 
 ```crystal
 files = Delta.parse_patch(patch_text)   # => Array(Delta::Patch::FilePatch)
