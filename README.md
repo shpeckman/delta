@@ -144,33 +144,45 @@ crystal run --release bench/memory_bench.cr   # workspace allocation comparison
 
 Snapshot (Crystal 1.21, release mode, ThinkPad X13 i5-1240P):
 
-```text
-> crystal run --release bench/diff_bench.cr
-    myers small               91.30k ( 10.95µs) (± 4.74%)  17.3kB/op        fastest
-histogram small               58.26k ( 17.16µs) (±10.02%)  21.8kB/op   1.57× slower
- patience small               47.40k ( 21.10µs) (± 9.44%)  27.8kB/op   1.93× slower
-    myers 50k lines 5% churn   31.47 ( 31.78ms) (± 2.91%)  6.45MB/op        fastest
-histogram 50k lines 5% churn   29.86 ( 33.49ms) (± 3.14%)  6.95MB/op   1.05× slower
- patience 50k lines 5% churn   29.17 ( 34.28ms) (± 2.54%)   7.2MB/op   1.08× slower
-    myers full rewrite          2.54 (394.28ms) (± 0.33%)  3.17MB/op   1.00× slower
-histogram full rewrite          2.52 (396.73ms) (± 0.47%)  4.17MB/op   1.01× slower
- patience full rewrite          2.54 (393.26ms) (± 0.95%)  4.67MB/op        fastest
+### Diff Algorithms (`bench/diff_bench.cr`)
 
-> crystal run --release bench/unified_bench.cr
-patch size: 248619 bytes
-unified render 50k  18.13  ( 55.14ms) (± 3.31%)  8.07MB/op  19.81× slower
-   patch parse 50k 359.25  (  2.78ms) (± 5.09%)  2.47MB/op        fastest
-   patch apply 50k 252.51  (  3.96ms) (± 4.46%)  4.38MB/op   1.42× slower
+| Scenario | Algorithm | Iterations/s | Time/op | Variance | Memory/op | Relative |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Small** | Myers | 91.30k | 10.95µs | ± 4.74% | 17.3kB | fastest |
+| **Small** | Histogram | 58.26k | 17.16µs | ± 10.02% | 21.8kB | 1.57× slower |
+| **Small** | Patience | 47.40k | 21.10µs | ± 9.44% | 27.8kB | 1.93× slower |
+| **50k lines (5% churn)** | Myers | 31.47 | 31.78ms | ± 2.91% | 6.45MB | fastest |
+| **50k lines (5% churn)** | Histogram | 29.86 | 33.49ms | ± 3.14% | 6.95MB | 1.05× slower |
+| **50k lines (5% churn)** | Patience | 29.17 | 34.28ms | ± 2.54% | 7.20MB | 1.08× slower |
+| **Full rewrite** | Patience | 2.54 | 393.26ms | ± 0.95% | 4.67MB | fastest |
+| **Full rewrite** | Myers | 2.54 | 394.28ms | ± 0.33% | 3.17MB | 1.00× slower |
+| **Full rewrite** | Histogram | 2.52 | 396.73ms | ± 0.47% | 4.17MB | 1.01× slower |
 
-> crystal run --release bench/memory_bench.cr
-Diff engine allocation (pre-tokenized, 50k lines):
-  myers      without ws  3.47 MB   with ws   0.0 kB
-  histogram  without ws  3.97 MB   with ws   0.0 kB
-  patience   without ws  4.22 MB   with ws   0.1 kB
+### Unified Patch Operations (`bench/unified_bench.cr`)
 
-Full diff_lines allocation (includes tokenization):
-  myers       without ws  6.93 MB   with ws  2.74 MB
-```
+*Patch size: 248,619 bytes (50k lines)*
+
+| Operation | Iterations/s | Time/op | Variance | Memory/op | Relative |
+| --- | --- | --- | --- | --- | --- |
+| **patch parse 50k** | 359.25 | 2.78ms | ± 5.09% | 2.47MB | fastest |
+| **patch apply 50k** | 252.51 | 3.96ms | ± 4.46% | 4.38MB | 1.42× slower |
+| **unified render 50k** | 18.13 | 55.14ms | ± 3.31% | 8.07MB | 19.81× slower |
+
+### Memory Allocation (`bench/memory_bench.cr`)
+
+#### Diff Engine Allocation (Pre-tokenized, 50k lines)
+
+Algorithm | Without Workspace | With Workspace
+--- | --- | ---
+**Myers** | 3.47 MB | 0.0 kB
+**Histogram** | 3.97 MB | 0.0 kB
+**Patience** | 4.22 MB | 0.1 kB
+
+#### Full `diff_lines` Allocation (Includes Tokenization, 50k lines)
+
+Algorithm | Without Workspace | With Workspace
+--- | --- | ---
+**Myers** | 6.93 MB | 2.74 MB
 
 Myers (the default) and Histogram are effectively tied on typical workloads; Histogram falls back to Myers when the rarest common element is too frequent, so it no longer degrades on heavily repeated content while still producing readable diffs around unique lines. Patience anchors on unique lines and is comparable on all but the most repetitive inputs.
 
