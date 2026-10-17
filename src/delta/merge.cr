@@ -36,8 +36,8 @@ module Delta
           i += 1
           next
         end
-        as = edits[i].a_pos
-        bs = edits[i].b_pos
+        a_s = edits[i].a_pos
+        b_s = edits[i].b_pos
         alen = 0
         blen = 0
         while i < edits.size && !edits[i].kind.equal?
@@ -45,7 +45,7 @@ module Delta
           blen += edits[i].b_len
           i += 1
         end
-        result << Change.new(as, alen, bs, blen)
+        result << Change.new(a_s, alen, b_s, blen)
       end
       result
     end
