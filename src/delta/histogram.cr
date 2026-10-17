@@ -1,7 +1,8 @@
 # src/delta/histogram.cr
 module Delta
   class Histogram < Algorithm
-    MAX_CHAIN = 64
+    MAX_CHAIN     = 64
+    MIN_HISTOGRAM = 64
 
     def diff(a : Slice(Int32), b : Slice(Int32)) : Array(Edit)
       edits = [] of Edit
