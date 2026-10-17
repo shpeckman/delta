@@ -77,12 +77,16 @@ module Delta
     private def tokenize_lines(source : String, interner : Interner(Bytes)) : Lines
       offs = offsets(source)
       bytes = source.to_slice
+      blank = nil.as(Int32?)
       tokens = Slice(Int32).new(offs.size) do |i|
         start = offs[i]
         stop = i + 1 < offs.size ? offs[i + 1] : bytes.size
-        interner.token(bytes[start, stop - start])
+        line = bytes[start, stop - start]
+        tok = interner.token(line)
+        blank = tok if blank.nil? && line.size == 1 && line[0] == NL
+        tok
       end
-      Lines.new(source, offs, tokens)
+      Lines.new(source, offs, tokens, blank)
     end
   end
 end
