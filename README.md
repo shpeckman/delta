@@ -110,6 +110,25 @@ Delta.apply_patch_to_dir(patch, "/path/to/repo", strip: 1)  # like `git apply -p
 
 `apply_patch_to_dir` handles `/dev/null` file creation and deletion, is all-or-nothing across every file, and rejects absolute paths and `..` traversal.
 
+## Aider edit formats
+
+Parse and apply the edit formats used by [aider](https://aider.chat/docs/more/edit-formats.html) — whole-file, SEARCH/REPLACE "diff", and fenced unified diff:
+
+```crystal
+edits = Delta.parse_edits(text)                    # => Array(Delta::EditFormat::FileEdit)
+new   = Delta.apply_edit(old_text, edits[0])       # apply one edit to in-memory content
+
+Delta.apply_edits(text, "/path/to/repo")           # apply all edits to files (all-or-nothing)
+```
+
+`parse_edits` auto-detects the format:
+
+- **whole** — a filename line followed by a fenced block holding the entire new file.
+- **diff / diff-fenced** — `<<<<<<< SEARCH / ======= / >>>>>>> REPLACE` blocks; an empty `SEARCH` appends or creates the file; matching tolerates leading-whitespace drift and `...` elision.
+- **udiff** — a ` ```diff `-fenced unified diff; hunks apply by search/replace, so `@@` line numbers are ignored.
+
+Pass `valid_files:` to `parse_edits` to resolve basename-only filenames against a known path list. `apply_edits` creates files with parent directories, is all-or-nothing, and rejects absolute paths and `..` traversal. Malformed or non-matching edits raise `Delta::EditFormatError`. `editor-diff` and `editor-whole` are prompt-only variants and parse as `diff` and `whole`.
+
 ## Diff stats
 
 ```crystal
