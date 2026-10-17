@@ -1,4 +1,7 @@
 # src/delta/patch.cr
+require "./edit"
+require "./tokenizer"
+
 module Delta
   class PatchError < Exception
   end
@@ -117,10 +120,66 @@ module Delta
       files
     end
 
+    def render(files : Array(FilePatch)) : String
+      String.build do |io|
+        files.each do |fp|
+          if old = fp.old_path
+            io << "--- " << old << '\n'
+          end
+          if new = fp.new_path
+            io << "+++ " << new << '\n'
+          end
+          fp.hunks.each do |hunk|
+            io << "@@ -"
+            write_range(io, hunk.a_start, hunk.a_count)
+            io << " +"
+            write_range(io, hunk.b_start, hunk.b_count)
+            io << " @@\n"
+            hunk.lines.each do |line|
+              prefix = case line.kind
+                       when .equal?  then ' '
+                       when .delete? then '-'
+                       when .insert? then '+'
+                       end
+              io << prefix
+              io << line.content
+              unless line.content.ends_with?('\n')
+                io << '\n'
+                io << "\\ No newline at end of file\n"
+              end
+            end
+          end
+        end
+      end
+    end
+
     def apply(source : String, patch : String) : String
       files = parse(patch)
       fp = files.first? || raise PatchError.new("patch contains no hunks")
       apply_file(source, fp)
+    end
+
+    def apply(source : String, patch : String, *, reverse : Bool = false) : String
+      return apply(source, Patch.reverse(patch)) if reverse
+      apply(source, patch)
+    end
+
+    def reverse(patch : String) : String
+      files = parse(patch).map do |fp|
+        hunks = fp.hunks.map do |hunk|
+          lines = hunk.lines.map do |line|
+            kind = case line.kind
+                   when .delete? then Kind::Insert
+                   when .insert? then Kind::Delete
+                   else                Kind::Equal
+                   end
+            Line.new(kind, line.content)
+          end
+          ParsedHunk.new(hunk.b_start, hunk.b_count, hunk.a_start, hunk.a_count, lines)
+        end
+        FilePatch.new(fp.new_path, fp.old_path, hunks)
+      end
+      render(files)
     end
 
     def apply_file(source : String, fp : FilePatch) : String
