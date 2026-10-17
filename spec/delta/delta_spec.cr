@@ -1,4 +1,4 @@
-# spec/delta_spec.cr
+# spec/delta/delta_spec.cr
 require "../spec_helper"
 
 describe Delta do

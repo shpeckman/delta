@@ -1,4 +1,4 @@
-# spec/edit_format_spec.cr
+# spec/delta/edit_format_spec.cr
 require "../spec_helper"
 require "file_utils"
 

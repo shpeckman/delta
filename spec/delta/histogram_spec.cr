@@ -1,4 +1,4 @@
-# spec/histogram_spec.cr
+# spec/delta/histogram_spec.cr
 require "../spec_helper"
 
 describe Delta::Histogram do

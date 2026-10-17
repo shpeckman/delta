@@ -1,4 +1,4 @@
-# spec/stat_spec.cr
+# spec/delta/stat_spec.cr
 require "../spec_helper"
 
 describe Delta::Stat do

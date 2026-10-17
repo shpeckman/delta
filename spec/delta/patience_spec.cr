@@ -1,4 +1,4 @@
-# spec/patience_spec.cr
+# spec/delta/patience_spec.cr
 require "../spec_helper"
 
 describe Delta::Patience do

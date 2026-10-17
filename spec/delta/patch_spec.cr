@@ -1,4 +1,4 @@
-# spec/patch_spec.cr
+# spec/delta/patch_spec.cr
 require "../spec_helper"
 
 describe Delta::Patch do

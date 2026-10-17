@@ -1,4 +1,4 @@
-# spec/fuzzy_spec.cr
+# spec/delta/fuzzy_spec.cr
 require "../spec_helper"
 
 describe Delta::Patch do

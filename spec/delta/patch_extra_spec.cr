@@ -1,4 +1,4 @@
-# spec/patch_extra_spec.cr
+# spec/delta/patch_extra_spec.cr
 require "spec"
 require "file_utils"
 require "../src/delta/patch"

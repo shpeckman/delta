@@ -1,4 +1,4 @@
-# spec/merge_spec.cr
+# spec/delta/merge_spec.cr
 require "../spec_helper"
 
 describe "Delta.merge" do

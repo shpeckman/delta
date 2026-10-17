@@ -1,4 +1,4 @@
-# spec/workspace_spec.cr
+# spec/delta/workspace_spec.cr
 require "../spec_helper"
 
 describe Delta::Workspace do

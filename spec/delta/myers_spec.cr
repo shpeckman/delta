@@ -1,4 +1,4 @@
-# spec/myers_spec.cr
+# spec/delta/myers_spec.cr
 require "../spec_helper"
 
 describe Delta::Myers do

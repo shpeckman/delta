@@ -1,4 +1,4 @@
-# spec/unified_spec.cr
+# spec/delta/unified_spec.cr
 require "../spec_helper"
 
 describe "Delta.unified_diff" do

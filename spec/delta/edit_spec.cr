@@ -1,4 +1,4 @@
-# spec/edit_spec.cr
+# spec/delta/edit_spec.cr
 require "../spec_helper"
 
 describe Delta::Edit do

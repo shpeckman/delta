@@ -1,4 +1,4 @@
-# spec/compaction_spec.cr
+# spec/delta/compaction_spec.cr
 require "../spec_helper"
 
 describe Delta::Compaction do
