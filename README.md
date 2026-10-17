@@ -120,20 +120,20 @@ crystal run --release bench/unified_bench.cr  # render/parse/apply throughput
 Snapshot (Crystal 1.21, release mode, ThinkPad X13 i5-1240P):
 
 ```text
-   myers small (100 lines)  83.5k ips ( 12.0µs)   17.1kB/op   fastest
-   histogram small          51.1k ips ( 19.6µs)   21.6kB/op   1.63× slower
-    patience small          42.3k ips ( 23.6µs)   27.6kB/op   1.97× slower
-   myers 50k lines 5% churn    24.7 ips (40.4ms)   6.31MB/op   fastest
-histogram 50k lines 5% churn     3.7 ips (268ms)   7.03MB/op   6.64× slower
- patience 50k lines 5% churn    23.3 ips (42.9ms)  7.07MB/op   1.06× slower
-   myers full rewrite (10k)     2.0 ips (490ms)    3.17MB/op   fastest
-histogram full rewrite           2.0 ips (505ms)   4.17MB/op   1.03× slower
- patience full rewrite           2.0 ips (494ms)   4.67MB/op   1.01× slower
+   myers small (100 lines)  61.8k ips ( 16.2µs)   18.3kB/op   fastest
+   histogram small          36.4k ips ( 27.5µs)   22.9kB/op   1.70× slower
+    patience small          30.1k ips ( 33.2µs)   28.8kB/op   2.05× slower
+   myers 50k lines 5% churn    26.7 ips (37.5ms)    6.9MB/op   fastest
+histogram 50k lines 5% churn     4.5 ips (222ms)    7.6MB/op   5.93× slower
+ patience 50k lines 5% churn    25.4 ips (39.4ms)   7.7MB/op   1.05× slower
+   myers full rewrite (10k)     2.2 ips (446ms)    3.17MB/op   1.01× slower
+histogram full rewrite           2.2 ips (454ms)   4.17MB/op   1.03× slower
+ patience full rewrite           2.3 ips (441ms)   4.67MB/op   fastest
 ```
 
 Myers (the default) is the fastest general-purpose choice. Histogram anchors one match per recursion level, so heavily repeated lines (the synthetic 50k workload reuses 5k distinct lines) degrade it — on real code, where lines are mostly unique, it tracks much closer and produces more readable diffs around moved blocks.
 
-Unified diff pipeline on a 50k-line file with 5% churn (249kB patch): render 69ms (diff + tokenize + hunks + emit), parse 3.3ms, apply 4.6ms.
+Unified diff pipeline on a 50k-line file with 5% churn (249kB patch): render 92ms (diff + tokenize + compact + hunks + emit), parse 4.4ms, apply 6.0ms.
 
 ## Development
 
