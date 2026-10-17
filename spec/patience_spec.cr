@@ -8,7 +8,7 @@ describe Delta::Patience do
 
   it "returns a single equal op for identical inputs" do
     edits = Delta.diff([1, 2, 3], [1, 2, 3], Delta::Patience.new)
-    edits.should eq [Delta::Edit.new(Delta::Kind::Equal, 0, 3, 0, 3)]
+    edits.should eq [Delta::Edit.new(Delta::Edit::Kind::Equal, 0, 3, 0, 3)]
   end
 
   it "handles disjoint sequences" do

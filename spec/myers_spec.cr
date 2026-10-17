@@ -8,17 +8,17 @@ describe Delta::Myers do
 
   it "returns a single equal op for identical inputs" do
     edits = Delta.diff([1, 2, 3], [1, 2, 3])
-    edits.should eq [Delta::Edit.new(Delta::Kind::Equal, 0, 3, 0, 3)]
+    edits.should eq [Delta::Edit.new(Delta::Edit::Kind::Equal, 0, 3, 0, 3)]
   end
 
   it "inserts into an empty input" do
     edits = Delta.diff([] of Int32, [1, 2])
-    edits.should eq [Delta::Edit.new(Delta::Kind::Insert, 0, 0, 0, 2)]
+    edits.should eq [Delta::Edit.new(Delta::Edit::Kind::Insert, 0, 0, 0, 2)]
   end
 
   it "deletes everything" do
     edits = Delta.diff([1, 2], [] of Int32)
-    edits.should eq [Delta::Edit.new(Delta::Kind::Delete, 0, 2, 0, 0)]
+    edits.should eq [Delta::Edit.new(Delta::Edit::Kind::Delete, 0, 2, 0, 0)]
   end
 
   it "produces a minimal diff for the Myers paper example" do

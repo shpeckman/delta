@@ -36,24 +36,24 @@ module Delta
     end
   end
 
-  class Interner(T)
-    @map  = Hash(T, Int32).new
-    @next = 0
-
-    def token(value : T) : Int32
-      if t = @map[value]?
-        t
-      else
-        t = @next
-        @map[value] = t
-        @next += 1
-        t
-      end
-    end
-  end
-
   module Tokenizer
     extend self
+
+    class Interner(T)
+      @map  = Hash(T, Int32).new
+      @next = 0
+
+      def token(value : T) : Int32
+        if t = @map[value]?
+          t
+        else
+          t = @next
+          @map[value] = t
+          @next += 1
+          t
+        end
+      end
+    end
 
     WHITESPACE_RUN = /\s+/
 

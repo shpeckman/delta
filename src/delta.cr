@@ -11,6 +11,7 @@ require "./delta/stat"
 require "./delta/hunk"
 require "./delta/unified"
 require "./delta/patch"
+require "./delta/edit_format"
 require "./delta/merge"
 require "./delta/words"
 
@@ -94,10 +95,36 @@ module Delta
     Patch.parse(patch)
   end
 
+  def self.parse_edits(text : String, valid_files : Array(String)? = nil) : Array(EditFormat::FileEdit)
+    EditFormat.parse(text, valid_files)
+  end
+
+  def self.apply_edit(source : String, edit : EditFormat::FileEdit, *, fuzzy : Bool = false, threshold : Float64 = 0.8) : String
+    EditFormat.apply_file(source, edit, fuzzy: fuzzy, threshold: threshold)
+  end
+
+  def self.apply_edits(text : String, root : String, *, fuzzy : Bool = false, threshold : Float64 = 0.8) : Array(String)
+    EditFormat.apply(text, root, fuzzy: fuzzy, threshold: threshold)
+  end
+
+  def self.render_whole(path : String, content : String) : String
+    EditFormat.render_whole(path, content)
+  end
+
+  def self.render_udiff(old : String, new : String, old_path : String, new_path : String, *,
+                        context : Int32 = 3, algorithm : Algorithm = Myers.new) : String
+    EditFormat.render_udiff(old, new, old_path, new_path, context: context, algorithm: algorithm)
+  end
+
+  def self.render_replace(old : String, new : String, path : String, *,
+                          context : Int32 = 3, algorithm : Algorithm = Myers.new) : String
+    EditFormat.render_replace(old, new, path, context: context, algorithm: algorithm)
+  end
+
   def self.merge(base : String, ours : String, theirs : String, *,
                  ours_label   : String    = "ours",
                  theirs_label : String    = "theirs",
-                 algorithm    : Algorithm = Myers.new) : MergeResult
+                 algorithm    : Algorithm = Myers.new) : Merge::Result
     Merge.merge(base, ours, theirs, ours_label, theirs_label, algorithm)
   end
 

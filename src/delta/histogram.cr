@@ -54,12 +54,12 @@ module Delta
       ae = a_hi - s
       be = b_hi - s
 
-      emit(edits, Kind::Equal, a_lo, p, b_lo, p) if p > 0
+      emit(edits, Edit::Kind::Equal, a_lo, p, b_lo, p) if p > 0
 
       if n == 0 && m > 0
-        emit(edits, Kind::Insert, am, 0, bm, m)
+        emit(edits, Edit::Kind::Insert, am, 0, bm, m)
       elsif m == 0 && n > 0
-        emit(edits, Kind::Delete, am, n, bm, 0)
+        emit(edits, Edit::Kind::Delete, am, n, bm, 0)
       elsif n > 0 && m > 0
         if n + m <= MIN_HISTOGRAM
           myers.diff_region(a, am, ae, b, bm, be, vf, vb, edits)
@@ -123,13 +123,13 @@ module Delta
             end
 
             rec(a, am, ai, b, bm, bi, myers, vf, vb, counts_a, counts_b, edits)
-            emit(edits, Kind::Equal, ai, 1, bi, 1)
+            emit(edits, Edit::Kind::Equal, ai, 1, bi, 1)
             rec(a, ai + 1, ae, b, bi + 1, be, myers, vf, vb, counts_a, counts_b, edits)
           end
         end
       end
 
-      emit(edits, Kind::Equal, ae, s, be, s) if s > 0
+      emit(edits, Edit::Kind::Equal, ae, s, be, s) if s > 0
     end
   end
 end

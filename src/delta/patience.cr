@@ -53,12 +53,12 @@ module Delta
       ae = a_hi - s
       be = b_hi - s
 
-      emit(edits, Kind::Equal, a_lo, p, b_lo, p) if p > 0
+      emit(edits, Edit::Kind::Equal, a_lo, p, b_lo, p) if p > 0
 
       if n == 0 && m > 0
-        emit(edits, Kind::Insert, am, 0, bm, m)
+        emit(edits, Edit::Kind::Insert, am, 0, bm, m)
       elsif m == 0 && n > 0
-        emit(edits, Kind::Delete, am, n, bm, 0)
+        emit(edits, Edit::Kind::Delete, am, n, bm, 0)
       elsif n > 0 && m > 0
         counts_a.clear
         counts_b.clear
@@ -94,7 +94,7 @@ module Delta
           pb = bm
           anchors.each do |ai, bi|
             rec(a, pa, ai, b, pb, bi, myers, vf, vb, counts_a, counts_b, bpos_map, edits)
-            emit(edits, Kind::Equal, ai, 1, bi, 1)
+            emit(edits, Edit::Kind::Equal, ai, 1, bi, 1)
             pa = ai + 1
             pb = bi + 1
           end
@@ -102,7 +102,7 @@ module Delta
         end
       end
 
-      emit(edits, Kind::Equal, ae, s, be, s) if s > 0
+      emit(edits, Edit::Kind::Equal, ae, s, be, s) if s > 0
     end
 
     private def lis(pairs : Array({Int32, Int32})) : Array({Int32, Int32})

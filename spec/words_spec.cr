@@ -42,9 +42,9 @@ describe Delta::Words do
       old = ["a", " ", "b"]
       new = ["a", " ", "c"]
       edits = [
-        Delta::Edit.new(Delta::Kind::Equal, 0, 2, 0, 2),
-        Delta::Edit.new(Delta::Kind::Delete, 2, 1, 2, 0),
-        Delta::Edit.new(Delta::Kind::Insert, 2, 0, 2, 1),
+        Delta::Edit.new(Delta::Edit::Kind::Equal, 0, 2, 0, 2),
+        Delta::Edit.new(Delta::Edit::Kind::Delete, 2, 1, 2, 0),
+        Delta::Edit.new(Delta::Edit::Kind::Insert, 2, 0, 2, 1),
       ]
       Delta::Words.markup(old, new, edits).should eq "a [-b-]{+c+}"
     end
@@ -53,10 +53,10 @@ describe Delta::Words do
       old = ["a", "b"]
       new = ["a", "b"]
       edits = [
-        Delta::Edit.new(Delta::Kind::Equal, 0, 1, 0, 1),
-        Delta::Edit.new(Delta::Kind::Delete, 1, 0, 1, 0),
-        Delta::Edit.new(Delta::Kind::Insert, 1, 0, 1, 0),
-        Delta::Edit.new(Delta::Kind::Equal, 1, 1, 1, 1),
+        Delta::Edit.new(Delta::Edit::Kind::Equal, 0, 1, 0, 1),
+        Delta::Edit.new(Delta::Edit::Kind::Delete, 1, 0, 1, 0),
+        Delta::Edit.new(Delta::Edit::Kind::Insert, 1, 0, 1, 0),
+        Delta::Edit.new(Delta::Edit::Kind::Equal, 1, 1, 1, 1),
       ]
       Delta::Words.markup(old, new, edits).should eq "ab"
     end

@@ -36,7 +36,7 @@ module Delta
         if i > 0
           pe   = edits[i - 1]
           take = Math.min(context, pe.a_len)
-          ops << Edit.new(Kind::Equal, pe.a_pos + pe.a_len - take, take,
+          ops << Edit.new(Edit::Kind::Equal, pe.a_pos + pe.a_len - take, take,
             pe.b_pos + pe.b_len - take, take) if take > 0
         end
 
@@ -44,7 +44,7 @@ module Delta
           e = edits[i]
           if e.kind.equal? && e.a_len > 2 * context
             take = Math.min(context, e.a_len)
-            ops << Edit.new(Kind::Equal, e.a_pos, take, e.b_pos, take) if take > 0
+            ops << Edit.new(Edit::Kind::Equal, e.a_pos, take, e.b_pos, take) if take > 0
             i += 1
             break
           end
@@ -54,7 +54,7 @@ module Delta
 
         if ops.last.kind.equal? && ops.last.a_len > context
           last = ops[-1]
-          ops[-1] = Edit.new(Kind::Equal, last.a_pos, context, last.b_pos, context)
+          ops[-1] = Edit.new(Edit::Kind::Equal, last.a_pos, context, last.b_pos, context)
         end
 
         hunks << Hunk.new(ops)

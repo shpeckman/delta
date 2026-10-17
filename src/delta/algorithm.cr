@@ -7,7 +7,7 @@ module Delta
       diff(a, b)
     end
 
-    protected def emit(edits : Array(Edit), kind : Kind, a_pos : Int32, a_len : Int32, b_pos : Int32, b_len : Int32) : Nil
+    protected def emit(edits : Array(Edit), kind : Edit::Kind, a_pos : Int32, a_len : Int32, b_pos : Int32, b_len : Int32) : Nil
       return if a_len == 0 && b_len == 0
       if (last = edits.last?) && last.kind == kind &&
          last.a_pos + last.a_len == a_pos && last.b_pos + last.b_len == b_pos

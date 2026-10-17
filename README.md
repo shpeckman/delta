@@ -50,7 +50,7 @@ patch = Delta.unified_diff(old_text, new_text,
   new_path: "b/file.cr")
 ```
 
-Parse and apply a unified diff (validates all hunks before writing; raises `Delta::PatchError` on mismatch; tolerates line-number drift):
+Parse and apply a unified diff (validates all hunks before writing; raises `Delta::Patch::Error` on mismatch; tolerates line-number drift):
 
 ```crystal
 files = Delta.parse_patch(patch_text)   # => Array(Delta::Patch::FilePatch)
@@ -109,6 +109,42 @@ Delta.apply_patch_to_dir(patch, "/path/to/repo", strip: 1)  # like `git apply -p
 ```
 
 `apply_patch_to_dir` handles `/dev/null` file creation and deletion, is all-or-nothing across every file, and rejects absolute paths and `..` traversal.
+
+## Aider edit formats
+
+Parse and apply the edit formats used by [aider](https://aider.chat/docs/more/edit-formats.html) — whole-file, SEARCH/REPLACE "diff", and fenced unified diff:
+
+```crystal
+edits = Delta.parse_edits(text)                    # => Array(Delta::EditFormat::FileEdit)
+new   = Delta.apply_edit(old_text, edits[0])       # apply one edit to in-memory content
+
+Delta.apply_edits(text, "/path/to/repo")           # apply all edits to files (all-or-nothing)
+```
+
+`parse_edits` auto-detects the format:
+
+- **whole** — a filename line followed by a fenced block holding the entire new file.
+- **diff / diff-fenced** — `<<<<<<< SEARCH / ======= / >>>>>>> REPLACE` blocks; an empty `SEARCH` appends or creates the file; matching tolerates leading-whitespace drift and `...` elision.
+- **udiff** — a ` ```diff `-fenced unified diff; hunks apply by search/replace, so `@@` line numbers are ignored.
+
+Pass `valid_files:` to `parse_edits` to resolve basename-only filenames against a known path list. `apply_edits` creates files with parent directories, is all-or-nothing, and rejects absolute paths and `..` traversal. Malformed or non-matching edits raise `Delta::EditFormat::Error`. `editor-diff` and `editor-whole` are prompt-only variants and parse as `diff` and `whole`.
+
+Enable a last-resort similarity match (opt-in, off by default) for noisy LLM output where a `SEARCH` block doesn't match exactly:
+
+```crystal
+Delta.apply_edit(text, edit, fuzzy: true)          # accept best match at >= 0.8 similarity
+Delta.apply_edit(text, edit, fuzzy: true, threshold: 0.9)
+```
+
+Render edits back out — the inverse of `parse_edits` — for feeding an LLM or round-tripping:
+
+```crystal
+Delta.render_whole("path/file.py", new_content)
+Delta.render_udiff(old, new, "a/f.py", "b/f.py")   # ```diff -fenced unified diff
+Delta.render_replace(old, new, "path/file.py")     # SEARCH/REPLACE blocks
+```
+
+`render_replace` emits one block per change group with surrounding context so every block locates its change; `render_udiff` reuses `unified_diff`. All three normalize a missing trailing newline (aider behaves the same), and `render_udiff`/`render_replace` return `""` when there is nothing to change.
 
 ## Diff stats
 
