@@ -29,9 +29,9 @@ module Delta
         top_as = a_s - up
         top_bs = b_s - up
 
-        if k + 1 < groups.size
-          next_a = groups[k + 1][0]
-          next_b = groups[k + 1][2]
+        if k + 1 < gs.size
+          next_a = gs[k + 1][0]
+          next_b = gs[k + 1][2]
         else
           next_a = a.size
           next_b = b.size
@@ -71,8 +71,8 @@ module Delta
       result
     end
 
-    private def extract_groups(edits : Array(Edit)) : Array({Int32, Int32, Int32, Int32})
-      groups = [] of {Int32, Int32, Int32, Int32}
+    private def extract_groups(edits : Array(Edit), groups : Array({Int32, Int32, Int32, Int32})) : Nil
+      groups.clear
       i = 0
       while i < edits.size
         if edits[i].kind.equal?
@@ -93,7 +93,6 @@ module Delta
         end
         groups << {a_s, a_e, b_s, b_e}
       end
-      groups
     end
 
     private def score(a : Slice(Int32), a_s : Int32, a_e : Int32, blank : Int32?) : Int32
