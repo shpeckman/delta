@@ -145,15 +145,31 @@ crystal run --release bench/memory_bench.cr   # workspace allocation comparison
 Snapshot (Crystal 1.21, release mode, ThinkPad X13 i5-1240P):
 
 ```text
-   myers small (100 lines)  61.9k ips ( 16.2µs)   17.3kB/op   1.02× slower
-   histogram small          40.1k ips ( 25.0µs)   21.8kB/op   1.55× slower
-    patience small          31.9k ips ( 31.4µs)   27.8kB/op   1.94× slower
-   myers 50k lines 5% churn    20.7 ips (48.3ms)    6.45MB/op  1.02× slower
-histogram 50k lines 5% churn    21.2 ips (47.2ms)   6.95MB/op   fastest
- patience 50k lines 5% churn    20.2 ips (49.5ms)    7.2MB/op  1.05× slower
-   myers full rewrite (10k)     1.8 ips (551ms)    3.17MB/op   1.15× slower
-histogram full rewrite           1.7 ips (581ms)   4.17MB/op   1.22× slower
- patience full rewrite           2.1 ips (478ms)   4.67MB/op   fastest
+> crystal run --release bench/diff_bench.cr
+    myers small               91.30k ( 10.95µs) (± 4.74%)  17.3kB/op        fastest
+histogram small               58.26k ( 17.16µs) (±10.02%)  21.8kB/op   1.57× slower
+ patience small               47.40k ( 21.10µs) (± 9.44%)  27.8kB/op   1.93× slower
+    myers 50k lines 5% churn   31.47 ( 31.78ms) (± 2.91%)  6.45MB/op        fastest
+histogram 50k lines 5% churn   29.86 ( 33.49ms) (± 3.14%)  6.95MB/op   1.05× slower
+ patience 50k lines 5% churn   29.17 ( 34.28ms) (± 2.54%)   7.2MB/op   1.08× slower
+    myers full rewrite          2.54 (394.28ms) (± 0.33%)  3.17MB/op   1.00× slower
+histogram full rewrite          2.52 (396.73ms) (± 0.47%)  4.17MB/op   1.01× slower
+ patience full rewrite          2.54 (393.26ms) (± 0.95%)  4.67MB/op        fastest
+
+> crystal run --release bench/unified_bench.cr
+patch size: 248619 bytes
+unified render 50k  18.13  ( 55.14ms) (± 3.31%)  8.07MB/op  19.81× slower
+   patch parse 50k 359.25  (  2.78ms) (± 5.09%)  2.47MB/op        fastest
+   patch apply 50k 252.51  (  3.96ms) (± 4.46%)  4.38MB/op   1.42× slower
+
+> crystal run --release bench/memory_bench.cr
+Diff engine allocation (pre-tokenized, 50k lines):
+  myers      without ws  3.47 MB   with ws   0.0 kB
+  histogram  without ws  3.97 MB   with ws   0.0 kB
+  patience   without ws  4.22 MB   with ws   0.1 kB
+
+Full diff_lines allocation (includes tokenization):
+  myers       without ws  6.93 MB   with ws  2.74 MB
 ```
 
 Myers (the default) and Histogram are effectively tied on typical workloads; Histogram falls back to Myers when the rarest common element is too frequent, so it no longer degrades on heavily repeated content while still producing readable diffs around unique lines. Patience anchors on unique lines and is comparable on all but the most repetitive inputs.
