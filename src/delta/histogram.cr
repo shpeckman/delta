@@ -47,6 +47,11 @@ module Delta
       elsif m == 0 && n > 0
         emit(edits, Kind::Delete, am, n, bm, 0)
       elsif n > 0 && m > 0
+        if n + m <= MIN_HISTOGRAM
+          myers.diff_region(a, am, ae, b, bm, be, vf, vb, edits)
+          emit(edits, Kind::Equal, ae, s, be, s) if s > 0
+          return
+        end
         counts_a.clear
         counts_b.clear
         i = am
