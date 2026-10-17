@@ -144,18 +144,18 @@ crystal run --release bench/unified_bench.cr  # render/parse/apply throughput
 Snapshot (Crystal 1.21, release mode, ThinkPad X13 i5-1240P):
 
 ```text
-   myers small (100 lines)  61.8k ips ( 16.2µs)   18.3kB/op   fastest
-   histogram small          36.4k ips ( 27.5µs)   22.9kB/op   1.70× slower
-    patience small          30.1k ips ( 33.2µs)   28.8kB/op   2.05× slower
-   myers 50k lines 5% churn    26.7 ips (37.5ms)    6.9MB/op   fastest
-histogram 50k lines 5% churn     4.5 ips (222ms)    7.6MB/op   5.93× slower
- patience 50k lines 5% churn    25.4 ips (39.4ms)   7.7MB/op   1.05× slower
-   myers full rewrite (10k)     2.2 ips (446ms)    3.17MB/op   1.01× slower
-histogram full rewrite           2.2 ips (454ms)   4.17MB/op   1.03× slower
- patience full rewrite           2.3 ips (441ms)   4.67MB/op   fastest
+   myers small (100 lines)  61.9k ips ( 16.2µs)   17.3kB/op   1.02× slower
+   histogram small          40.1k ips ( 25.0µs)   21.8kB/op   1.55× slower
+    patience small          31.9k ips ( 31.4µs)   27.8kB/op   1.94× slower
+   myers 50k lines 5% churn    20.7 ips (48.3ms)    6.45MB/op  1.02× slower
+histogram 50k lines 5% churn    21.2 ips (47.2ms)   6.95MB/op   fastest
+ patience 50k lines 5% churn    20.2 ips (49.5ms)    7.2MB/op  1.05× slower
+   myers full rewrite (10k)     1.8 ips (551ms)    3.17MB/op   1.15× slower
+histogram full rewrite           1.7 ips (581ms)   4.17MB/op   1.22× slower
+ patience full rewrite           2.1 ips (478ms)   4.67MB/op   fastest
 ```
 
-Myers (the default) is the fastest general-purpose choice. Histogram anchors one match per recursion level, so heavily repeated lines (the synthetic 50k workload reuses 5k distinct lines) degrade it — on real code, where lines are mostly unique, it tracks much closer and produces more readable diffs around moved blocks.
+Myers (the default) and Histogram are effectively tied on typical workloads; Histogram falls back to Myers when the rarest common element is too frequent, so it no longer degrades on heavily repeated content while still producing readable diffs around unique lines. Patience anchors on unique lines and is comparable on all but the most repetitive inputs.
 
 Unified diff pipeline on a 50k-line file with 5% churn (249kB patch): render 92ms (diff + tokenize + compact + hunks + emit), parse 4.4ms, apply 6.0ms.
 
