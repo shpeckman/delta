@@ -1,7 +1,7 @@
 # bench/memory_bench.cr
 require "./bench_helper"
 
-def human(bytes : UInt64) : String
+def human(bytes : Int64) : String
   mb = bytes / 1_048_576.0
   mb >= 1.0 ? "#{mb.round(2)} MB" : "#{(bytes / 1024.0).round(1)} kB"
 end
