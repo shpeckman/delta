@@ -33,6 +33,14 @@ module Delta
     Unified.render(la, lb, hunks, old_path, new_path)
   end
 
+  def self.apply_patch(source : String, patch : String) : String
+    Patch.apply(source, patch)
+  end
+
+  def self.parse_patch(patch : String) : Array(Patch::FilePatch)
+    Patch.parse(patch)
+  end
+
   def self.apply(a : Indexable(T), b : Indexable(T), edits : Array(Edit)) : Array(T) forall T
     result = [] of T
     edits.each do |e|
