@@ -1,4 +1,4 @@
-# bench/memory_bench.cr
+# bench/delta/memory_bench.cr
 require "../bench_helper"
 
 def human(bytes : Int64) : String

@@ -1,4 +1,4 @@
-# bench/unified_bench.cr
+# bench/delta/unified_bench.cr
 require "../bench_helper"
 
 rnd     = Random.new(77)
