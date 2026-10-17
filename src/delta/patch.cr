@@ -159,9 +159,11 @@ module Delta
       apply_file(source, fp)
     end
 
-    def apply(source : String, patch : String, *, reverse : Bool = false) : String
-      return apply(source, Patch.reverse(patch)) if reverse
-      apply(source, patch)
+    def apply(source : String, patch : String, *, reverse : Bool = false, fuzz : Int32 = 0) : String
+      patch = Patch.reverse(patch) if reverse
+      files = parse(patch)
+      fp = files.first? || raise PatchError.new("patch contains no hunks")
+      apply_file(source, fp, fuzz: fuzz)
     end
 
     def reverse(patch : String) : String
@@ -182,12 +184,12 @@ module Delta
       render(files)
     end
 
-    def apply_file(source : String, fp : FilePatch) : String
+    def apply_file(source : String, fp : FilePatch, *, fuzz : Int32 = 0) : String
       lines = Lines.split(source)
       positions = Array(Int32).new(fp.hunks.size, 0)
       min_pos = 0
       fp.hunks.each_with_index do |hunk, i|
-        pos = find_position(lines, hunk, min_pos)
+        pos = find_position(lines, hunk, min_pos, fuzz)
         positions[i] = pos
         min_pos = pos + hunk.lines.count { |l| !l.kind.insert? }
       end
