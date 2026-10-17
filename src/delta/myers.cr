@@ -5,8 +5,9 @@ module Delta
       edits = [] of Edit
       max = a.size + b.size
       return edits if max == 0
-      vf = Slice(Int32).new(2 * max + 3, 0)
-      vb = Slice(Int32).new(2 * max + 3, 0)
+      bound = max + (max + 1) // 2
+      vf = Slice(Int32).new(2 * bound + 3, 0)
+      vb = Slice(Int32).new(2 * bound + 3, 0)
       diff_region(a, 0, a.size, b, 0, b.size, vf, vb, edits)
       edits
     end
