@@ -41,7 +41,7 @@ describe "Delta.unified_diff" do
 
   it "marks a missing trailing newline" do
     patch = Delta.unified_diff("a\nb", "a\nc")
-    patch.should eq <<-DIFF
+    patch.should eq <<-DIFF + "\n"
       @@ -1,2 +1,2 @@
        a
       -b
