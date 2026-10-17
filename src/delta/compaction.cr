@@ -17,16 +17,19 @@ module Delta
         end
 
         a_s = edits[i].a_pos
+        a_e = edits[i].a_pos + edits[i].a_len
         b_s = edits[i].b_pos
-        alen = 0
-        blen = 0
+        b_e = edits[i].b_pos + edits[i].b_len
         while i < edits.size && !edits[i].kind.equal?
-          alen += edits[i].a_len
-          blen += edits[i].b_len
+          e = edits[i]
+          a_s = Math.min(a_s, e.a_pos)
+          a_e = Math.max(a_e, e.a_pos + e.a_len)
+          b_s = Math.min(b_s, e.b_pos)
+          b_e = Math.max(b_e, e.b_pos + e.b_len)
           i += 1
         end
-        a_e = a_s + alen
-        b_e = b_s + blen
+        alen = a_e - a_s
+        blen = b_e - b_s
 
         up = 0
         while can_slide_up(a, b, a_s - up, a_e - up, b_s - up, b_e - up, alen, blen, anchor_a, anchor_b)
