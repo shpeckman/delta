@@ -185,7 +185,7 @@ module Delta
     end
 
     def apply_file(source : String, fp : FilePatch, *, fuzz : Int32 = 0) : String
-      lines     = Lines.split(source)
+      lines     = Tokenizer::Lines.split(source)
       positions = Array(Int32).new(fp.hunks.size, 0)
       min_pos   = 0
       fp.hunks.each_with_index do |hunk, i|
@@ -284,7 +284,7 @@ module Delta
       io << ',' << count unless count == 1
     end
 
-    private def find_position(lines : Lines, hunk : ParsedHunk, min_pos : Int32, fuzz : Int32) : Int32
+    private def find_position(lines : Tokenizer::Lines, hunk : ParsedHunk, min_pos : Int32, fuzz : Int32) : Int32
       base = Math.max(hunk.a_start, min_pos)
       if fuzz == 0
         offset = 0
@@ -322,7 +322,7 @@ module Delta
       end
     end
 
-    private def match_errors(lines : Lines, pos : Int32, hunk : ParsedHunk) : Int32?
+    private def match_errors(lines : Tokenizer::Lines, pos : Int32, hunk : ParsedHunk) : Int32?
       idx    = pos
       errors = 0
       hunk.lines.each do |l|
