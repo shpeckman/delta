@@ -4,11 +4,11 @@ require "./tokenizer"
 require "./patch"
 
 module Delta
-  class EditFormatError < Exception
-  end
-
   module EditFormat
     extend self
+
+    class Error < Exception
+    end
 
     enum Kind
       Whole
@@ -70,7 +70,7 @@ module Delta
               if valid_files && valid_files.size == 1
                 filename = valid_files[0]
               else
-                raise EditFormatError.new("no filename before fence")
+                raise Error.new("no filename before fence")
               end
             end
             fname   = filename
@@ -94,7 +94,7 @@ module Delta
         if HEAD.matches?(lines[i].strip)
           filename = find_filename(lines, i, valid_files) || current
           if filename.nil?
-            raise EditFormatError.new("missing filename before SEARCH/REPLACE block")
+            raise Error.new("missing filename before SEARCH/REPLACE block")
           end
           current  = filename
           i += 1
@@ -103,14 +103,14 @@ module Delta
             original << lines[i]
             i += 1
           end
-          raise EditFormatError.new("expected `=======` in SEARCH/REPLACE block") if i >= lines.size
+          raise Error.new("expected `=======` in SEARCH/REPLACE block") if i >= lines.size
           i += 1
           updated = [] of String
           while i < lines.size && !UPDATED.matches?(lines[i].strip) && !DIVIDER.matches?(lines[i].strip)
             updated << lines[i]
             i += 1
           end
-          raise EditFormatError.new("expected `>>>>>>> REPLACE` in SEARCH/REPLACE block") if i >= lines.size
+          raise Error.new("expected `>>>>>>> REPLACE` in SEARCH/REPLACE block") if i >= lines.size
           flat << {filename, Block.new(original.join, updated.join)}
         end
         i += 1
@@ -142,7 +142,7 @@ module Delta
       result = source
       edit.blocks.each do |block|
         result = search_replace(result, block.search, block.replace, fuzzy: fuzzy, threshold: threshold) ||
-          raise EditFormatError.new(block_error(edit.path, block))
+          raise Error.new(block_error(edit.path, block))
       end
       result
     end
@@ -505,10 +505,10 @@ module Delta
     end
 
     private def safe_path(path : String) : String
-      raise EditFormatError.new("absolute path: #{path}") if path.starts_with?('/')
+      raise Error.new("absolute path: #{path}") if path.starts_with?('/')
       parts = path.split('/')
-      raise EditFormatError.new("path traversal: #{path}") if parts.any? { |p| p == ".." }
-      raise EditFormatError.new("empty path: #{path}") if parts.empty? || parts.all?(&.empty?)
+      raise Error.new("path traversal: #{path}") if parts.any? { |p| p == ".." }
+      raise Error.new("empty path: #{path}") if parts.empty? || parts.all?(&.empty?)
       path
     end
 

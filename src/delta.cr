@@ -124,7 +124,7 @@ module Delta
   def self.merge(base : String, ours : String, theirs : String, *,
                  ours_label   : String    = "ours",
                  theirs_label : String    = "theirs",
-                 algorithm    : Algorithm = Myers.new) : MergeResult
+                 algorithm    : Algorithm = Myers.new) : Merge::Result
     Merge.merge(base, ours, theirs, ours_label, theirs_label, algorithm)
   end
 

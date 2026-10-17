@@ -3,20 +3,20 @@ require "./tokenizer"
 require "./edit"
 
 module Delta
-  struct MergeResult
-    getter text      : String
-    getter conflicts : Int32
-
-    def initialize(@text : String, @conflicts : Int32)
-    end
-
-    def clean? : Bool
-      conflicts == 0
-    end
-  end
-
   module Merge
     extend self
+
+    struct Result
+      getter text      : String
+      getter conflicts : Int32
+
+      def initialize(@text : String, @conflicts : Int32)
+      end
+
+      def clean? : Bool
+        conflicts == 0
+      end
+    end
 
     struct Change
       getter a_start : Int32
@@ -55,7 +55,7 @@ module Delta
 
     def merge(base : String, ours : String, theirs : String,
               ours_label : String = "ours", theirs_label : String = "theirs",
-              algorithm : Algorithm = Myers.new) : MergeResult
+              algorithm : Algorithm = Myers.new) : Result
       lb = Lines.split(base)
       lo = Lines.split(ours)
       lt = Lines.split(theirs)
@@ -124,7 +124,7 @@ module Delta
           pos += 1
         end
       end
-      MergeResult.new(text, conflicts)
+      Result.new(text, conflicts)
     end
 
     private def replay(base : Lines, side : Lines, gstart : Int32, gend : Int32, changes : Array(Change)) : String

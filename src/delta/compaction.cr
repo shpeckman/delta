@@ -60,8 +60,8 @@ module Delta
         nbs = top_bs + best_d
         gap = nas - anchor_a
         emit_equal(result, anchor_a, gap, anchor_b) if gap > 0
-        result << Edit.new(Kind::Delete, nas, alen, nbs, 0) if alen > 0
-        result << Edit.new(Kind::Insert, nas, 0, nbs, blen) if blen > 0
+        result << Edit.new(Edit::Kind::Delete, nas, alen, nbs, 0) if alen > 0
+        result << Edit.new(Edit::Kind::Insert, nas, 0, nbs, blen) if blen > 0
         anchor_a = nas + alen
         anchor_b = nbs + blen
       end
@@ -108,9 +108,9 @@ module Delta
 
     private def emit_equal(result : Array(Edit), a_pos : Int32, len : Int32, b_pos : Int32) : Nil
       if (last = result.last?) && last.kind.equal? && last.a_pos + last.a_len == a_pos
-        result[-1] = Edit.new(Kind::Equal, last.a_pos, last.a_len + len, last.b_pos, last.b_len + len)
+        result[-1] = Edit.new(Edit::Kind::Equal, last.a_pos, last.a_len + len, last.b_pos, last.b_len + len)
       else
-        result << Edit.new(Kind::Equal, a_pos, len, b_pos, len)
+        result << Edit.new(Edit::Kind::Equal, a_pos, len, b_pos, len)
       end
     end
   end

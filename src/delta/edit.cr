@@ -1,12 +1,12 @@
 # src/delta/edit.cr
 module Delta
-  enum Kind : UInt8
-    Equal
-    Delete
-    Insert
-  end
-
   struct Edit
+    enum Kind : UInt8
+      Equal
+      Delete
+      Insert
+    end
+
     getter kind  : Kind
     getter a_pos : Int32
     getter a_len : Int32

@@ -44,19 +44,19 @@ module Delta
       am = a_lo + p
       bm = b_lo + p
 
-      emit(edits, Kind::Equal, a_lo, p, b_lo, p) if p > 0
+      emit(edits, Edit::Kind::Equal, a_lo, p, b_lo, p) if p > 0
 
       if n == 0 && m > 0
-        emit(edits, Kind::Insert, am, 0, bm, m)
+        emit(edits, Edit::Kind::Insert, am, 0, bm, m)
       elsif m == 0 && n > 0
-        emit(edits, Kind::Delete, am, n, bm, 0)
+        emit(edits, Edit::Kind::Delete, am, n, bm, 0)
       elsif n > 0 && m > 0
         x, y = middle_snake(a, am, b, bm, n, m, vf, vb)
         diff_region(a, am, am + x, b, bm, bm + y, vf, vb, edits)
         diff_region(a, am + x, a_hi - s, b, bm + y, b_hi - s, vf, vb, edits)
       end
 
-      emit(edits, Kind::Equal, a_hi - s, s, b_hi - s, s) if s > 0
+      emit(edits, Edit::Kind::Equal, a_hi - s, s, b_hi - s, s) if s > 0
     end
 
     private def middle_snake(a : Slice(Int32), a_lo : Int32, b : Slice(Int32), b_lo : Int32,

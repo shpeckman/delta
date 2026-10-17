@@ -3,19 +3,19 @@ require "./edit"
 require "./tokenizer"
 
 module Delta
-  class PatchError < Exception
-  end
-
   module Patch
     extend self
+
+    class Error < Exception
+    end
 
     HUNK_HEADER = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/
 
     struct Line
-      getter kind    : Kind
+      getter kind    : Edit::Kind
       getter content : String
 
-      def initialize(@kind : Kind, @content : String)
+      def initialize(@kind : Edit::Kind, @content : String)
       end
 
       def_equals_and_hash kind, content
@@ -92,15 +92,15 @@ module Delta
           lines[-1] = Line.new(last.kind, content)
         elsif (lines = hunk_lines) && (need_a > 0 || need_b > 0)
           if raw == "\n" || raw.empty?
-            lines << Line.new(Kind::Equal, "\n")
+            lines << Line.new(Edit::Kind::Equal, "\n")
             need_a -= 1
             need_b -= 1
             next
           end
           kind = case raw[0]
-                 when ' ' then Kind::Equal
-                 when '-' then Kind::Delete
-                 when '+' then Kind::Insert
+                 when ' ' then Edit::Kind::Equal
+                 when '-' then Edit::Kind::Delete
+                 when '+' then Edit::Kind::Insert
                  else          next
                  end
           content = raw.byte_slice(1)
@@ -155,14 +155,14 @@ module Delta
 
     def apply(source : String, patch : String) : String
       files = parse(patch)
-      fp    = files.first? || raise PatchError.new("patch contains no hunks")
+      fp    = files.first? || raise Error.new("patch contains no hunks")
       apply_file(source, fp)
     end
 
     def apply(source : String, patch : String, *, reverse : Bool = false, fuzz : Int32 = 0) : String
       patch = Patch.reverse(patch) if reverse
       files = parse(patch)
-      fp    = files.first? || raise PatchError.new("patch contains no hunks")
+      fp    = files.first? || raise Error.new("patch contains no hunks")
       apply_file(source, fp, fuzz: fuzz)
     end
 
@@ -171,9 +171,9 @@ module Delta
         hunks = fp.hunks.map do |hunk|
           lines = hunk.lines.map do |line|
             kind = case line.kind
-                   when .delete? then Kind::Insert
-                   when .insert? then Kind::Delete
-                   else               Kind::Equal
+                   when .delete? then Edit::Kind::Insert
+                   when .insert? then Edit::Kind::Delete
+                   else               Edit::Kind::Equal
                    end
             Line.new(kind, line.content)
           end
@@ -226,23 +226,23 @@ module Delta
       affected = [] of String
       parse(patch).each do |fp|
         if fp.old_path == "/dev/null"
-          new_path = fp.new_path || raise PatchError.new("missing new path")
+          new_path = fp.new_path || raise Error.new("missing new path")
           stripped = stripped_path(new_path, strip)
           result   = apply_file("", fp, fuzz: fuzz)
           actions << {stripped, result, false}
           affected << stripped
         elsif fp.new_path == "/dev/null"
-          old_path = fp.old_path || raise PatchError.new("missing old path")
+          old_path = fp.old_path || raise Error.new("missing old path")
           stripped = stripped_path(old_path, strip)
           result   = apply_file(read_file(root, stripped), fp, fuzz: fuzz)
           unless result.empty?
-            raise PatchError.new("deletion produced content for #{stripped}")
+            raise Error.new("deletion produced content for #{stripped}")
           end
           actions << {stripped, "", true}
           affected << stripped
         else
-          old_path     = fp.old_path || raise PatchError.new("missing old path")
-          new_path     = fp.new_path || raise PatchError.new("missing new path")
+          old_path     = fp.old_path || raise Error.new("missing old path")
+          new_path     = fp.new_path || raise Error.new("missing new path")
           old_stripped = stripped_path(old_path, strip)
           new_stripped = stripped_path(new_path, strip)
           result       = apply_file(read_file(root, old_stripped), fp, fuzz: fuzz)
@@ -265,17 +265,17 @@ module Delta
     private def read_file(root : String, path : String) : String
       File.read(File.join(root, path))
     rescue ex : File::NotFoundError
-      raise PatchError.new("missing file: #{path}")
+      raise Error.new("missing file: #{path}")
     end
 
     private def stripped_path(path : String, strip : Int32) : String
       return path if path == "/dev/null"
-      raise PatchError.new("absolute path: #{path}") if path.starts_with?('/')
+      raise Error.new("absolute path: #{path}") if path.starts_with?('/')
       parts = path.split('/')
       parts = parts.size > strip ? parts[strip..] : [] of String
-      raise PatchError.new("path traversal: #{path}") if parts.any? { |part| part == ".." }
+      raise Error.new("path traversal: #{path}") if parts.any? { |part| part == ".." }
       stripped = parts.join('/')
-      raise PatchError.new("empty path: #{path}") if stripped.empty?
+      raise Error.new("empty path: #{path}") if stripped.empty?
       stripped
     end
 
@@ -295,7 +295,7 @@ module Delta
           return bwd if offset > 0 && bwd >= min_pos && match_errors(lines, bwd, hunk) == 0
           offset += 1
           if fwd > lines.size && bwd < min_pos
-            raise PatchError.new("hunk @@ -#{hunk.a_start},#{hunk.a_count} +#{hunk.b_start},#{hunk.b_count} @@ does not apply")
+            raise Error.new("hunk @@ -#{hunk.a_start},#{hunk.a_count} +#{hunk.b_start},#{hunk.b_count} @@ does not apply")
           end
         end
       else
@@ -316,7 +316,7 @@ module Delta
           pos += 1
         end
         if best_pos < 0
-          raise PatchError.new("hunk @@ -#{hunk.a_start},#{hunk.a_count} +#{hunk.b_start},#{hunk.b_count} @@ does not apply")
+          raise Error.new("hunk @@ -#{hunk.a_start},#{hunk.a_count} +#{hunk.b_start},#{hunk.b_count} @@ does not apply")
         end
         best_pos
       end
