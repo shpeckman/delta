@@ -137,17 +137,17 @@ module Delta
       edits
     end
 
-    def apply_file(source : String, edit : FileEdit) : String
+    def apply_file(source : String, edit : FileEdit, *, fuzzy : Bool = false, threshold : Float64 = 0.8) : String
       return edit.content || "" if edit.kind.whole?
       result = source
       edit.blocks.each do |block|
-        result = search_replace(result, block.search, block.replace) ||
+        result = search_replace(result, block.search, block.replace, fuzzy: fuzzy, threshold: threshold) ||
           raise EditFormatError.new(block_error(edit.path, block))
       end
       result
     end
 
-    def apply(text : String, root : String) : Array(String)
+    def apply(text : String, root : String, *, fuzzy : Bool = false, threshold : Float64 = 0.8) : Array(String)
       edits = parse(text)
       state = {} of String => String
       order = [] of String
@@ -158,7 +158,7 @@ module Delta
           state[path] = File.exists?(full) ? File.read(full) : ""
           order << path
         end
-        state[path] = apply_file(state[path], edit)
+        state[path] = apply_file(state[path], edit, fuzzy: fuzzy, threshold: threshold)
       end
       order.each do |path|
         full = File.join(root, path)
@@ -168,7 +168,7 @@ module Delta
       order
     end
 
-    def search_replace(source : String, before : String, after : String) : String?
+    def search_replace(source : String, before : String, after : String, *, fuzzy : Bool = false, threshold : Float64 = 0.8) : String?
       return source + after if before.strip.empty?
       whole, whole_lines = prep(source)
       part, part_lines   = prep(before)
@@ -189,7 +189,48 @@ module Delta
           return res
         end
       end
-      try_dotdotdots(whole, part, replace)
+      if res = try_dotdotdots(whole, part, replace)
+        return res
+      end
+      fuzzy ? fuzzy_replace(whole_lines, part_lines, replace_lines, threshold) : nil
+    end
+
+    def render_whole(path : String, content : String) : String
+      String.build do |io|
+        io << path << '\n'
+        io << FENCE << '\n'
+        io << content
+        io << '\n' unless content.ends_with?('\n')
+        io << FENCE << '\n'
+      end
+    end
+
+    def render_udiff(old : String, new : String, old_path : String, new_path : String, *,
+                     context : Int32 = 3, algorithm : Algorithm = Myers.new) : String
+      patch = Delta.unified_diff(old, new, context: context, old_path: old_path, new_path: new_path, algorithm: algorithm)
+      return "" if patch.empty?
+      "```diff\n" + patch + "```\n"
+    end
+
+    def render_replace(old : String, new : String, path : String, *,
+                       context : Int32 = 3, algorithm : Algorithm = Myers.new) : String
+      edits = Delta.diff_lines(old, new, algorithm: algorithm)
+      hunks = Hunk.build(edits, Math.max(1, context))
+      return "" if hunks.empty?
+      la = Lines.split(old)
+      lb = Lines.split(new)
+      String.build do |io|
+        io << path << '\n'
+        io << FENCE << '\n'
+        hunks.each do |hunk|
+          io << "<<<<<<< SEARCH\n"
+          write_line_block(io, la, hunk.a_start, hunk.a_count)
+          io << "=======\n"
+          write_line_block(io, lb, hunk.b_start, hunk.b_count)
+          io << ">>>>>>> REPLACE\n"
+        end
+        io << FENCE << '\n'
+      end
     end
 
     private def looks_like_udiff?(text : String) : Bool
