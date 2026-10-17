@@ -1,4 +1,4 @@
-# src/delta/histogram.cr
+# src/delta/algorithms/histogram.cr
 class Delta::Histogram < Delta::Algorithm
   MIN_HISTOGRAM = 64
   MAX_COUNT     =  8

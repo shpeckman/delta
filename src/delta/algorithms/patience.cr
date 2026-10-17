@@ -1,4 +1,4 @@
-# src/delta/patience.cr
+# src/delta/algorithms/patience.cr
 class Delta::Patience < Delta::Algorithm
   def diff(a : Slice(Int32), b : Slice(Int32)) : Array(Edit)
     diff(a, b, nil)

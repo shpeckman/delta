@@ -1,4 +1,4 @@
-# src/delta/myers.cr
+# src/delta/algorithms/myers.cr
 class Delta::Myers < Delta::Algorithm
   def diff(a : Slice(Int32), b : Slice(Int32)) : Array(Edit)
     diff(a, b, nil)
