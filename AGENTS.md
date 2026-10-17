@@ -8,9 +8,13 @@
 - `src/delta/algorithm.cr` — `Algorithm` contract plus shared `emit` (merge adjacent ops) and `normalize` (delete-before-insert ordering).
 - `src/delta/myers.cr` — Myers O(ND), linear-space middle snake; `diff_region` is reused by the other algorithms as their fallback.
 - `src/delta/histogram.cr` / `src/delta/patience.cr` — histogram and patience diffs, Myers fallback.
+- `src/delta/compaction.cr` — slides change groups to blank-line boundaries (git xdiff-style), on by default.
+- `src/delta/stat.cr` — insertion/deletion counts.
 - `src/delta/hunk.cr` — groups edits into context-bounded hunks.
 - `src/delta/unified.cr` — unified diff rendering (streaming to `IO`).
-- `src/delta/patch.cr` — unified diff parsing and all-or-nothing application with drift tolerance; `PatchError`.
+- `src/delta/patch.cr` — unified diff parsing, all-or-nothing application with drift tolerance, reverse patch, multi-file (`apply_to_dir`) apply; `PatchError`.
+- `src/delta/merge.cr` — three-way merge with conflict markers; `MergeResult`.
+- `src/delta/words.cr` — whitespace-delimited word tokenizer and inline word-diff markup.
 - `spec/` — `crystal spec`; round-trip properties hold for all three algorithms.
 - `bench/` — `crystal run --release bench/diff_bench.cr` and `bench/unified_bench.cr`.
 

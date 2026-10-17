@@ -61,6 +61,48 @@ Delta.diff_lines(a, b, algorithm: Delta::Patience.new)  # anchors on unique line
 
 All three produce valid diffs (applying the edits to the old input always yields the new input); they differ in edit minimality and how readable the result is on moved or heavily repeated content.
 
+Hunks are "compacted" by default: change groups slide across identical lines to sit at blank-line boundaries, matching git's xdiff behavior. Pass `compact: false` to `diff` / `diff_lines` / `unified_diff` to disable it.
+
+## Three-way merge
+
+```crystal
+result = Delta.merge(base, ours, theirs,
+  ours_label: "mine", theirs_label: "yours")
+result.clean?      # => false when there were conflicts
+result.conflicts   # => number of conflict blocks
+result.text        # merged content, with <<<<<<< / ======= / >>>>>>> markers
+```
+
+Clean regions merge automatically; identical changes taken from both sides merge once; overlapping or abutting changes produce a conflict block.
+
+## Reverse and multi-file patches
+
+```crystal
+reversed = Delta.reverse_patch(patch)                 # swap old/new and -/+
+Delta.apply_patch(b_text, patch, reverse: true)       # apply the patch backwards
+
+Delta.apply_patch_to_dir(patch, "/path/to/repo", strip: 1)  # like `git apply -p1`
+```
+
+`apply_patch_to_dir` handles `/dev/null` file creation and deletion, is all-or-nothing across every file, and rejects absolute paths and `..` traversal.
+
+## Diff stats
+
+```crystal
+Delta.stat(edits)              # => Delta::Stat (insertions, deletions, total)
+Delta.stat(old_text, new_text) # convenience overload
+```
+
+## Word and character diffs
+
+```crystal
+Delta.diff_words(old, new)  # ops over whitespace-delimited word tokens
+Delta.diff_chars(old, new)  # ops over characters
+Delta.word_diff(old, new)   # "hello [-world-]{+there+}" inline markup
+```
+
+Word tokens are maximal whitespace/non-whitespace runs, so `Delta::Words.tokens(s).join == s` — reconstruct any word diff with `Delta.apply(Delta::Words.tokens(old), Delta::Words.tokens(new), edits).join`.
+
 ## Performance
 
 - All comparisons run on `Slice(Int32)` tokens — integer compares, cache-friendly.
