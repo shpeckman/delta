@@ -138,17 +138,13 @@ module Delta
     end
 
     def apply_file(source : String, edit : FileEdit) : String
-      case edit.kind
-      when Kind::Whole
-        edit.content || ""
-      when Kind::Replace, Kind::Unified
-        result = source
-        edit.blocks.each do |block|
-          result = search_replace(result, block.search, block.replace) ||
-            raise EditFormatError.new(block_error(edit.path, block))
-        end
-        result
+      return edit.content || "" if edit.kind.whole?
+      result = source
+      edit.blocks.each do |block|
+        result = search_replace(result, block.search, block.replace) ||
+          raise EditFormatError.new(block_error(edit.path, block))
       end
+      result
     end
 
     def apply(text : String, root : String) : Array(String)
