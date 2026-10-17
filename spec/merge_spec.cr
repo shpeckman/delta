@@ -1,7 +1,7 @@
 # spec/merge_spec.cr
 require "./spec_helper"
 
-describe Delta.merge do
+describe "Delta.merge" do
   it "merges cleanly when each side changes different regions" do
     base = "1\n2\n3\n4\n5\n"
     ours = "1\nA\n3\n4\n5\n"
