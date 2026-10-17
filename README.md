@@ -173,6 +173,7 @@ Word tokens are maximal whitespace/non-whitespace runs, so `Delta::Words.tokens(
 Benchmarks (run in release mode):
 
 ```console
+crystal run --release bench/delta_bench.cr          # run full bench suite.
 crystal run --release bench/delta/diff_bench.cr     # algorithm comparison across workloads
 crystal run --release bench/delta/unified_bench.cr  # render/parse/apply throughput
 crystal run --release bench/delta/memory_bench.cr   # workspace allocation comparison
