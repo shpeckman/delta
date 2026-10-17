@@ -69,9 +69,9 @@ module Delta
       patch.each_line(chomp: false) do |raw|
         if raw.starts_with?("--- ")
           flush_file.call
-          old_path = raw[4..].chomp
+          old_path = raw.byte_slice(4).chomp
         elsif raw.starts_with?("+++ ")
-          new_path = raw[4..].chomp
+          new_path = raw.byte_slice(4).chomp
         elsif md = HUNK_HEADER.match(raw)
           flush_hunk.call
           a_s = md[1].to_i
@@ -82,17 +82,25 @@ module Delta
           hunk_lines = [] of Line
           need_a = a_c
           need_b = b_c
-        elsif raw.starts_with?('\\') && (lines = hunk_lines) && (last = lines.last?)
-          last.content = last.content.chomp
+        elsif raw.starts_with?('\\') && (lines = hunk_lines) && !lines.empty?
+          last = lines[-1]
+          content = last.content
+          content = content.byte_slice(0, content.bytesize - 1) if content.ends_with?('\n')
+          lines[-1] = Line.new(last.kind, content)
         elsif (lines = hunk_lines) && (need_a > 0 || need_b > 0)
-          kind = case raw[0]?
-                 when ' '       then Kind::Equal
-                 when '-'       then Kind::Delete
-                 when '+'       then Kind::Insert
-                 when Nil       then Kind::Equal
-                 else                next
+          if raw == "\n" || raw.empty?
+            lines << Line.new(Kind::Equal, "\n")
+            need_a -= 1
+            need_b -= 1
+            next
+          end
+          kind = case raw[0]
+                 when ' ' then Kind::Equal
+                 when '-' then Kind::Delete
+                 when '+' then Kind::Insert
+                 else          next
                  end
-          content = raw.empty? ? "\n" : raw[1..]
+          content = raw.byte_slice(1)
           lines << Line.new(kind, content)
           case kind
           when .equal?
