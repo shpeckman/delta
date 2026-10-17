@@ -17,7 +17,7 @@ tokens_a = la.tokens
 tokens_b = lb.tokens
 
 puts "Diff engine allocation (pre-tokenized, 50k lines):"
-{"myers", Delta::Myers.new, "histogram", Delta::Histogram.new, "patience", Delta::Patience.new}.each do |name, algorithm|
+{"myers" => Delta::Myers.new, "histogram" => Delta::Histogram.new, "patience" => Delta::Patience.new}.each do |name, algorithm|
   ws = Delta::Workspace.new
   algorithm.diff(tokens_a, tokens_b, ws)
   without = Benchmark.memory { algorithm.diff(tokens_a, tokens_b) }
