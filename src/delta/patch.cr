@@ -219,6 +219,64 @@ module Delta
       end
     end
 
+    def apply_to_dir(patch : String, root : String, *, strip : Int32 = 1) : Array(String)
+      actions = [] of {String, String, Bool}
+      affected = [] of String
+      parse(patch).each do |fp|
+        if fp.old_path == "/dev/null"
+          new_path = fp.new_path || raise PatchError.new("missing new path")
+          stripped = stripped_path(new_path, strip)
+          result = apply_file("", fp)
+          actions << {stripped, result, false}
+          affected << stripped
+        elsif fp.new_path == "/dev/null"
+          old_path = fp.old_path || raise PatchError.new("missing old path")
+          stripped = stripped_path(old_path, strip)
+          result = apply_file(read_file(root, stripped), fp)
+          unless result.empty?
+            raise PatchError.new("deletion produced content for #{stripped}")
+          end
+          actions << {stripped, "", true}
+          affected << stripped
+        else
+          old_path = fp.old_path || raise PatchError.new("missing old path")
+          new_path = fp.new_path || raise PatchError.new("missing new path")
+          old_stripped = stripped_path(old_path, strip)
+          new_stripped = stripped_path(new_path, strip)
+          result = apply_file(read_file(root, old_stripped), fp)
+          actions << {new_stripped, result, false}
+          affected << new_stripped
+        end
+      end
+      actions.each do |action|
+        path, content, delete = action
+        if delete
+          File.delete(File.join(root, path))
+        else
+          Dir.mkdir_p(File.dirname(File.join(root, path)))
+          File.write(File.join(root, path), content)
+        end
+      end
+      affected
+    end
+
+    private def read_file(root : String, path : String) : String
+      File.read(File.join(root, path))
+    rescue ex : File::NotFoundError
+      raise PatchError.new("missing file: #{path}")
+    end
+
+    private def stripped_path(path : String, strip : Int32) : String
+      return path if path == "/dev/null"
+      raise PatchError.new("absolute path: #{path}") if path.starts_with?('/')
+      parts = path.split('/')
+      parts = parts.size > strip ? parts[strip..] : [] of String
+      raise PatchError.new("path traversal: #{path}") if parts.any? { |part| part == ".." }
+      stripped = parts.join('/')
+      raise PatchError.new("empty path: #{path}") if stripped.empty?
+      stripped
+    end
+
     private def find_position(lines : Lines, hunk : ParsedHunk, min_pos : Int32) : Int32
       base = Math.max(hunk.a_start, min_pos)
       offset = 0
