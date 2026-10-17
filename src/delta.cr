@@ -3,6 +3,8 @@ require "./delta/edit"
 require "./delta/tokenizer"
 require "./delta/algorithm"
 require "./delta/myers"
+require "./delta/histogram"
+require "./delta/patience"
 
 module Delta
   VERSION = {{ `shards version "#{__DIR__}/.."`.chomp.stringify }}
