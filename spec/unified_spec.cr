@@ -36,7 +36,7 @@ describe "Delta.unified_diff" do
     old = "1\n2\n3\n4\n5\n"
     new = "1\nX\n3\nY\n5\n"
     patch = Delta.unified_diff(old, new, context: 2)
-    patch.scan(/@@ /).size.should eq 2
+    patch.scan(/@@ /).size.should eq 1
   end
 
   it "marks a missing trailing newline" do
