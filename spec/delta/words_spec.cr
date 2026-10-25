@@ -1,6 +1,5 @@
 # spec/delta/words_spec.cr
-require "spec"
-require "../src/delta/words"
+require "../spec_helper"
 
 describe Delta::Words do
   describe ".tokens" do
