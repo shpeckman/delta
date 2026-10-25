@@ -13,9 +13,9 @@ describe Delta::Msgpack do
   it "appends and trims strings" do
     base = t({"t" => "ab"} of MessagePack::Type => MessagePack::Type)
     Delta::Msgpack.diff(base, t({"t" => "abcd"} of MessagePack::Type => MessagePack::Type))
-      .should eq [Delta::Msgpack::Ops::Append.new(["t"] of Delta::Msgpack::Segment, "cd")] of Delta::Msgpack::Op
+      .should eq [Delta::Msgpack::Ops::Append.new(["t"] of MessagePack::Type, "cd")] of Delta::Msgpack::Op
     Delta::Msgpack.diff(t({"t" => "abcd"} of MessagePack::Type => MessagePack::Type), t({"t" => "cd"} of MessagePack::Type => MessagePack::Type))
-      .should eq [Delta::Msgpack::Ops::Trim.new(["t"] of Delta::Msgpack::Segment, 2)] of Delta::Msgpack::Op
+      .should eq [Delta::Msgpack::Ops::Trim.new(["t"] of MessagePack::Type, 2)] of Delta::Msgpack::Op
   end
 
   it "sets nested edits and splices arrays" do

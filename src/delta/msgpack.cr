@@ -4,7 +4,7 @@ require "./tree"
 
 module Delta::Msgpack
   alias Segment = MessagePack::Type
-  alias Path = Array(Segment)
+  alias Path = Array(MessagePack::Type)
 
   module Errors
     class Error < Exception
