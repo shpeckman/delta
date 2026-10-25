@@ -8,7 +8,7 @@ delta/
 ├─╴AGENTS.md
 ├─╴README.md
 ├─╴shard.yml
-├─╴bench/                                 # `crystal run --release bench/delta/diff_bench.cr`, `bench/delta/unified_bench.cr`, and `bench/delta/memory_bench.cr`.
+├─╴bench/                                 # `crystal run --release bench/delta_bench.cr` (full suite) or one of `bench/delta/{diff,unified,memory,json}_bench.cr`.
 ├─╴spec/                                  # `crystal spec`; round-trip properties hold for all three algorithms.
 ╰─╴src/
    ├─╴delta.cr                            # entry point: requires, `VERSION`, top-level API (`Delta.diff`, `Delta.diff_lines`, `Delta.unified_diff`, `Delta.apply_patch`, `Delta.parse_patch`, `Delta.apply`, `Delta.diff_json`, `Delta.apply_json`).

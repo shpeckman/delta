@@ -272,6 +272,25 @@ Algorithm | Without Workspace | With Workspace
 ----------|-------------------|---------------
 **Myers** | 6.93 MB           | 2.74 MB
 
+### JSON Documents (`bench/json_bench.cr`)
+
+*Crystal 1.22, same machine. 5,000 records; 5% of records edited (470 ops, 18,717 bytes as tuples, 20,487 bytes on the wire)*
+
+Operation                        | Iterations/s | Time/op  | Variance | Memory/op | Relative
+---------------------------------|--------------|----------|----------|-----------|---------------
+**tracker change (100 appends)** | 62.85k       | 15.91µs  | ± 4.53%  | 21.3kB    | fastest
+**tracker change (1 leaf)**      | 38.50k       | 25.97µs  | ± 6.94%  | 79.8kB    | 1.63× slower
+**diff 5k (edits + insert)**     | 30.66k       | 32.62µs  | ± 4.36%  | 77.3kB    | 2.05× slower
+**apply_immutable 5k**           | 9.34k        | 107.03µs | ± 5.84%  | 180kB     | 6.73× slower
+**to_json**                      | 8.59k        | 116.43µs | ± 14.96% | 64.8kB    | 7.32× slower
+**wire encode**                  | 7.10k        | 140.78µs | ± 4.93%  | 93.6kB    | 8.85× slower
+**parse_ops**                    | 3.94k        | 253.93µs | ± 11.48% | 236kB     | 15.96× slower
+**wire decode**                  | 3.22k        | 310.63µs | ± 3.77%  | 365kB     | 19.52× slower
+**pending_ops 10k leaf ops**     | 2.56k        | 390.72µs | ± 3.95%  | 675kB     | 24.56× slower
+**diff 5k (in place edits)**     | 407.00       | 2.46ms   | ± 5.79%  | 3.38MB    | 154.43× slower
+
+Array diffs trim the common prefix and suffix: equal-length arrays are diffed element by element, while a length change emits one `Splice` covering everything between the first and last difference (the "edits + insert" case is a single op, which is why it's fast). The wire encoding pays off only when paths repeat across batches; with all-distinct paths, as here, it's slightly larger than plain tuples.
+
 Myers (the default) and Histogram are effectively tied on typical workloads; Histogram falls back to Myers when the rarest common element is too frequent, so it no longer degrades on heavily repeated content while still producing readable diffs around unique lines. Patience anchors on unique lines and is comparable on all but the most repetitive inputs.
 
 Unified diff pipeline on a 50k-line file with 5% churn (249kB patch): render 92ms (diff + tokenize + compact + hunks + emit), parse 4.4ms, apply 6.0ms.
