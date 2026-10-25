@@ -157,15 +157,15 @@ Delta.apply_json(base, ops) == value      # => true; base is not mutated, unchan
 
 Ops serialize to compact JSON tuples (`ops.to_json`, `Delta::JSON.parse_ops`):
 
-Op | Tuple | Meaning
----|-------|--------
-`Replace` | `["r", value]` | replace the whole document
-`Set`     | `["s", path, value]` | set a key or index (an index equal to the size appends)
-`Delete`  | `["d", path]` | remove a key or element
-`Append`  | `["a", path, text]` | append to a string
-`Trim`    | `["t", path, count]` | drop `count` characters from the start of a string
+Op        | Tuple                               | Meaning
+----------|-------------------------------------|--------------------------------------------------------
+`Replace` | `["r", value]`                      | replace the whole document
+`Set`     | `["s", path, value]`                | set a key or index (an index equal to the size appends)
+`Delete`  | `["d", path]`                       | remove a key or element
+`Append`  | `["a", path, text]`                 | append to a string
+`Trim`    | `["t", path, count]`                | drop `count` characters from the start of a string
 `Splice`  | `["p", path, index, remove, items]` | array splice
-`Move`    | `["m", path, permutation]` | reorder an array (`new[i] = old[permutation[i]]`)
+`Move`    | `["m", path, permutation]`          | reorder an array (`new[i] = old[permutation[i]]`)
 
 A path is an array of string keys and integer indices. `Delta::JSON.apply_immutable` copies on write; `Delta::JSON.apply` mutates its input in place (for replicas you own). Invalid paths raise `Errors::InvalidPath`, malformed ops `Errors::InvalidOp`.
 
