@@ -678,19 +678,19 @@ module Delta::Tree
       end
 
       def push(*values) : Nil
-        splice(list.size, 0, values.map { |entry| {{adapter}}.any(entry) }.to_a)
+        splice(list.size, 0, values.map { |entry| ({{adapter}}.any(entry)).as({{node_type}}) }.to_a)
       end
 
       def unshift(*values) : Nil
-        splice(0, 0, values.map { |entry| {{adapter}}.any(entry) }.to_a)
+        splice(0, 0, values.map { |entry| ({{adapter}}.any(entry)).as({{node_type}}) }.to_a)
       end
 
       def insert(index : Int32, *values) : Nil
-        splice(index, 0, values.map { |entry| {{adapter}}.any(entry) }.to_a)
+        splice(index, 0, values.map { |entry| ({{adapter}}.any(entry)).as({{node_type}}) }.to_a)
       end
 
       def concat(values : Enumerable) : Nil
-        splice(list.size, 0, values.map { |entry| {{adapter}}.any(entry) }.to_a)
+        splice(list.size, 0, values.map { |entry| ({{adapter}}.any(entry)).as({{node_type}}) }.to_a)
       end
 
       def pop : {{node_type}}?
