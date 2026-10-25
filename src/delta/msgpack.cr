@@ -1,5 +1,7 @@
 # src/delta/msgpack.cr
 require "msgpack"
+require "sync/mutex"
+require "sync/condition_variable"
 require "./tree"
 
 module Delta::Msgpack
@@ -18,6 +20,18 @@ module Delta::Msgpack
 
     class InvalidOp < Error
     end
+
+    class Stale < Error
+    end
+
+    class Settled < Error
+    end
+
+    class Rejected < Error
+    end
+
+    class Closed < Error
+    end
   end
 
   def self.format(path : Path) : String
@@ -30,8 +44,36 @@ module Delta::Msgpack
     end
   end
 
+  def self.any(value : MessagePack::Type) : MessagePack::Type
+    copy(value)
+  end
+
   def self.any(value : MessagePack::Any) : MessagePack::Type
-    value.raw
+    copy(value.raw)
+  end
+
+  def self.any(value : String) : MessagePack::Type
+    value
+  end
+
+  def self.any(value : Bool) : MessagePack::Type
+    value
+  end
+
+  def self.any(value : Nil) : MessagePack::Type
+    nil
+  end
+
+  def self.any(value : Int) : MessagePack::Type
+    value.to_i64
+  end
+
+  def self.any(value : Float) : MessagePack::Type
+    value.to_f64
+  end
+
+  def self.nil_value : MessagePack::Type
+    nil
   end
 
   def self.copy(value : MessagePack::Type) : MessagePack::Type
@@ -138,7 +180,7 @@ module Delta::Msgpack
     value.as?(Array(MessagePack::Type)) || raise Errors::InvalidOp.new("path must be an array")
   end
 
-  protected def self.build_op(code : String, path : Path, tuple : Array(MessagePack::Type)) : Op
+  def self.build_op(code : String, path : Path, tuple : Array(MessagePack::Type)) : Op
     case code
     when "s"
       expect_arity(tuple, 3)
