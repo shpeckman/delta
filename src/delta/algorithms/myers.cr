@@ -5,7 +5,7 @@ class Delta::Myers < Delta::Algorithm
   end
 
   def diff(a : Slice(Int32), b : Slice(Int32), ws : Workspace?) : Array(Edit)
-    max   = a.size + b.size
+    max = a.size + b.size
     edits = ws ? ws.edits : [] of Edit
     edits.clear
     return edits if max == 0
@@ -14,9 +14,9 @@ class Delta::Myers < Delta::Algorithm
       dest = ws.normalized
     else
       bound = max + (max + 1) // 2
-      vf    = Slice(Int32).new(2 * bound + 3, 0)
-      vb    = Slice(Int32).new(2 * bound + 3, 0)
-      dest  = [] of Edit
+      vf = Slice(Int32).new(2 * bound + 3, 0)
+      vb = Slice(Int32).new(2 * bound + 3, 0)
+      dest = [] of Edit
     end
     diff_region(a, 0, a.size, b, 0, b.size, vf, vb, edits)
     normalize(edits, dest)
@@ -38,8 +38,8 @@ class Delta::Myers < Delta::Algorithm
       s += 1
     end
 
-    n  = n0 - p - s
-    m  = m0 - p - s
+    n = n0 - p - s
+    m = m0 - p - s
     am = a_lo + p
     bm = b_lo + p
 
@@ -60,10 +60,10 @@ class Delta::Myers < Delta::Algorithm
 
   private def middle_snake(a : Slice(Int32), a_lo : Int32, b : Slice(Int32), b_lo : Int32,
                            n : Int32, m : Int32, vf : Slice(Int32), vb : Slice(Int32)) : {Int32, Int32}
-    max   = n + m
+    max = n + m
     delta = n - m
-    off   = max + (max + 1) // 2 + 1
-    half  = (max + 1) // 2
+    off = max + (max + 1) // 2 + 1
+    half = (max + 1) // 2
 
     d = 0
     while d <= half

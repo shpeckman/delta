@@ -6,9 +6,9 @@ module Delta::JSON
     getter limit : Int32
 
     def initialize(@limit : Int32 = LIMIT)
-      @ops      = Array(Op).new
-      @tails    = Hash(Int32, Array(String)).new
-      @leaves   = Hash(Path, Int32).new
+      @ops = Array(Op).new
+      @tails = Hash(Int32, Array(String)).new
+      @leaves = Hash(Path, Int32).new
       @overflow = false
     end
 
@@ -39,9 +39,9 @@ module Delta::JSON
     end
 
     def clear : Nil
-      @ops      = Array(Op).new
-      @tails    = Hash(Int32, Array(String)).new
-      @leaves   = Hash(Path, Int32).new
+      @ops = Array(Op).new
+      @tails = Hash(Int32, Array(String)).new
+      @leaves = Hash(Path, Int32).new
       @overflow = false
     end
 
@@ -63,9 +63,9 @@ module Delta::JSON
       end
 
       if @ops.size > @limit
-        @ops      = Array(Op).new
-        @tails    = Hash(Int32, Array(String)).new
-        @leaves   = Hash(Path, Int32).new
+        @ops = Array(Op).new
+        @tails = Hash(Int32, Array(String)).new
+        @leaves = Hash(Path, Int32).new
         @overflow = true
       end
     end

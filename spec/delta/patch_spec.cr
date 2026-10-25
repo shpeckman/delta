@@ -3,15 +3,15 @@ require "../spec_helper"
 
 describe Delta::Patch do
   it "round-trips a simple change" do
-    old   = "a\nb\nc\nd\ne\n"
-    new   = "a\nb\nX\nd\ne\n"
+    old = "a\nb\nc\nd\ne\n"
+    new = "a\nb\nX\nd\ne\n"
     patch = Delta.unified_diff(old, new)
     Delta.apply_patch(old, patch).should eq new
   end
 
   it "round-trips file headers" do
-    old   = "1\n2\n3\n"
-    new   = "1\nX\n3\n"
+    old = "1\n2\n3\n"
+    new = "1\nX\n3\n"
     patch = Delta.unified_diff(old, new, old_path: "a/f.cr", new_path: "b/f.cr")
     files = Delta.parse_patch(patch)
     files.size.should eq 1
@@ -21,8 +21,8 @@ describe Delta::Patch do
   end
 
   it "round-trips a missing trailing newline" do
-    old   = "a\nb"
-    new   = "a\nc\n"
+    old = "a\nb"
+    new = "a\nc\n"
     patch = Delta.unified_diff(old, new)
     Delta.apply_patch(old, patch).should eq new
     Delta.apply_patch(new, Delta.unified_diff(new, old)).should eq old
@@ -34,16 +34,16 @@ describe Delta::Patch do
   end
 
   it "tolerates line number drift" do
-    old     = "a\nb\nc\nd\ne\nf\ng\nh\n"
-    new     = "a\nb\nc\nd\ne\nf\nX\nh\n"
-    patch   = Delta.unified_diff(old, new)
+    old = "a\nb\nc\nd\ne\nf\ng\nh\n"
+    new = "a\nb\nc\nd\ne\nf\nX\nh\n"
+    patch = Delta.unified_diff(old, new)
     drifted = "p\nq\n" + old
     Delta.apply_patch(drifted, patch).should eq "p\nq\n" + new
   end
 
   it "raises Patch::Error when context does not match" do
-    old   = "a\nb\nc\n"
-    new   = "a\nX\nc\n"
+    old = "a\nb\nc\n"
+    new = "a\nX\nc\n"
     patch = Delta.unified_diff(old, new)
     expect_raises(Delta::Patch::Error) { Delta.apply_patch("totally\ndifferent\nfile\n", patch) }
   end
@@ -53,11 +53,11 @@ describe Delta::Patch do
   end
 
   it "round-trips random string pairs through all algorithms" do
-    rnd  = Random.new(1234)
+    rnd = Random.new(1234)
     pool = (0...20).map { |i| "line #{i}" }
     {Delta::Myers.new, Delta::Histogram.new, Delta::Patience.new}.each do |algorithm|
       50.times do
-        old   = (0...rnd.rand(60)).map { pool[rnd.rand(pool.size)] }.join("\n") + "\n"
+        old = (0...rnd.rand(60)).map { pool[rnd.rand(pool.size)] }.join("\n") + "\n"
         lines = old.lines
         rnd.rand(10).times do
           case rnd.rand(3)

@@ -12,8 +12,8 @@ describe Delta::Histogram do
   end
 
   it "handles disjoint sequences" do
-    a     = [1, 2, 3]
-    b     = [4, 5, 6]
+    a = [1, 2, 3]
+    b = [4, 5, 6]
     edits = Delta.diff(a, b, Delta::Histogram.new)
     Delta.apply(a, b, edits).should eq b
   end
@@ -21,16 +21,16 @@ describe Delta::Histogram do
   it "reconstructs b for random sequences with heavy repetition" do
     rnd = Random.new(7)
     100.times do
-      a     = Array.new(rnd.rand(80)) { rnd.rand(4) }
-      b     = Array.new(rnd.rand(80)) { rnd.rand(4) }
+      a = Array.new(rnd.rand(80)) { rnd.rand(4) }
+      b = Array.new(rnd.rand(80)) { rnd.rand(4) }
       edits = Delta.diff(a, b, Delta::Histogram.new)
       Delta.apply(a, b, edits).should eq b
     end
   end
 
   it "falls back to myers when every element is too common" do
-    a     = [1] * 100
-    b     = [1] * 50
+    a = [1] * 100
+    b = [1] * 50
     edits = Delta.diff(a, b, Delta::Histogram.new)
     Delta.apply(a, b, edits).should eq b
   end

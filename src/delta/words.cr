@@ -7,11 +7,11 @@ module Delta::Words
   def tokens(source : String) : Array(String)
     result = [] of String
     return result if source.empty?
-    reader      = Char::Reader.new(source)
+    reader = Char::Reader.new(source)
     token_start = 0
     previous_whitespace : Bool? = nil
     while reader.has_next?
-      pos        = reader.pos
+      pos = reader.pos
       whitespace = reader.current_char.whitespace?
       reader.next_char
       if !previous_whitespace.nil? && previous_whitespace != whitespace

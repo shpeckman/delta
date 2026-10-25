@@ -18,7 +18,7 @@ module Delta
   VERSION = {{ `shards version "#{__DIR__}/.."`.chomp.stringify }}
 
   def self.diff(a : Indexable(T), b : Indexable(T), algorithm : Algorithm = Myers.new, *,
-                compact   : Bool       = true,
+                compact : Bool = true,
                 workspace : Workspace? = nil) : Array(Edit) forall T
     ta, tb = Tokenizer.tokenize(a, b)
     edits = algorithm.diff(ta, tb, workspace)
@@ -31,10 +31,10 @@ module Delta
   end
 
   def self.diff_lines(old_source : String, new_source : String, algorithm : Algorithm = Myers.new, *,
-                      compact     : Bool       = true,
-                      whitespace  : Whitespace = Whitespace::None,
-                      ignore_case : Bool       = false,
-                      workspace   : Workspace? = nil) : Array(Edit)
+                      compact : Bool = true,
+                      whitespace : Whitespace = Whitespace::None,
+                      ignore_case : Bool = false,
+                      workspace : Workspace? = nil) : Array(Edit)
     la, lb = Tokenizer.lines(old_source, new_source, whitespace: whitespace, ignore_case: ignore_case)
     edits = algorithm.diff(la.tokens, lb.tokens, workspace)
     if compact
@@ -60,14 +60,14 @@ module Delta
   end
 
   def self.unified_diff(old_source : String, new_source : String, *,
-                        context     : Int32      = 3,
-                        old_path    : String?    = nil,
-                        new_path    : String?    = nil,
-                        algorithm   : Algorithm  = Myers.new,
-                        compact     : Bool       = true,
-                        whitespace  : Whitespace = Whitespace::None,
-                        ignore_case : Bool       = false,
-                        workspace   : Workspace? = nil) : String
+                        context : Int32 = 3,
+                        old_path : String? = nil,
+                        new_path : String? = nil,
+                        algorithm : Algorithm = Myers.new,
+                        compact : Bool = true,
+                        whitespace : Whitespace = Whitespace::None,
+                        ignore_case : Bool = false,
+                        workspace : Workspace? = nil) : String
     la, lb = Tokenizer.lines(old_source, new_source, whitespace: whitespace, ignore_case: ignore_case)
     edits = algorithm.diff(la.tokens, lb.tokens, workspace)
     if compact
@@ -121,15 +121,15 @@ module Delta
   end
 
   def self.merge(base : String, ours : String, theirs : String, *,
-                 ours_label   : String    = "ours",
-                 theirs_label : String    = "theirs",
-                 algorithm    : Algorithm = Myers.new) : Merge::Result
+                 ours_label : String = "ours",
+                 theirs_label : String = "theirs",
+                 algorithm : Algorithm = Myers.new) : Merge::Result
     Merge.merge(base, ours, theirs, ours_label, theirs_label, algorithm)
   end
 
   def self.stat(edits : Array(Edit)) : Stat
     insertions = 0
-    deletions  = 0
+    deletions = 0
     edits.each do |e|
       case e.kind
       when .insert? then insertions += e.b_len

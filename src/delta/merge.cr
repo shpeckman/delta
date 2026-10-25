@@ -6,7 +6,7 @@ module Delta::Merge
   extend self
 
   struct Result
-    getter text      : String
+    getter text : String
     getter conflicts : Int32
 
     def initialize(@text : String, @conflicts : Int32)
@@ -19,9 +19,9 @@ module Delta::Merge
 
   struct Change
     getter a_start : Int32
-    getter a_len   : Int32
-    getter b_pos   : Int32
-    getter b_len   : Int32
+    getter a_len : Int32
+    getter b_pos : Int32
+    getter b_len : Int32
 
     def initialize(@a_start : Int32, @a_len : Int32, @b_pos : Int32, @b_len : Int32)
     end
@@ -29,7 +29,7 @@ module Delta::Merge
 
   def changes(edits : Array(Edit)) : Array(Change)
     result = [] of Change
-    i      = 0
+    i = 0
     while i < edits.size
       if edits[i].kind.equal?
         i += 1
@@ -40,7 +40,7 @@ module Delta::Merge
       b_s = edits[i].b_pos
       b_e = edits[i].b_pos + edits[i].b_len
       while i < edits.size && !edits[i].kind.equal?
-        e   = edits[i]
+        e = edits[i]
         a_s = Math.min(a_s, e.a_pos)
         a_e = Math.max(a_e, e.a_pos + e.a_len)
         b_s = Math.min(b_s, e.b_pos)
@@ -64,8 +64,8 @@ module Delta::Merge
     conflicts = 0
     text = String.build do |io|
       pos = 0
-      i   = 0
-      j   = 0
+      i = 0
+      j = 0
       while i < co.size || j < ct.size
         gstart = if j >= ct.size
                    co[i].a_start
@@ -75,8 +75,8 @@ module Delta::Merge
                    Math.min(co[i].a_start, ct[j].a_start)
                  end
         gend = gstart
-        gi   = i
-        gj   = j
+        gi = i
+        gj = j
         loop do
           extended = false
           while gi < co.size && co[gi].a_start <= gend
@@ -97,7 +97,7 @@ module Delta::Merge
           pos += 1
         end
 
-        ours_rep   = replay(lb, lo, gstart, gend, co[i...gi])
+        ours_rep = replay(lb, lo, gstart, gend, co[i...gi])
         theirs_rep = replay(lb, lt, gstart, gend, ct[j...gj])
         if i == gi
           io << theirs_rep
@@ -114,8 +114,8 @@ module Delta::Merge
           io << ">>>>>>> " << theirs_label << '\n'
         end
 
-        i   = gi
-        j   = gj
+        i = gi
+        j = gj
         pos = gend
       end
       while pos < lb.size

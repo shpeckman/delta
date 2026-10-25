@@ -7,12 +7,12 @@ module Delta::JSON
       Adopted
     end
 
-    getter tracker  : Tracker
-    getter base     : ::JSON::Any
-    getter value    : ::JSON::Any
-    getter ops      : Array(Op)
+    getter tracker : Tracker
+    getter base : ::JSON::Any
+    getter value : ::JSON::Any
+    getter ops : Array(Op)
     getter revision : Int64
-    getter status   : Status
+    getter status : Status
 
     def initialize(@tracker : Tracker, @base : ::JSON::Any, @value : ::JSON::Any, @ops : Array(Op), @revision : Int64)
       @status = Status::Pending
@@ -34,9 +34,9 @@ module Delta::JSON
 
   class Tracker
     def initialize(value : ::JSON::Any)
-      @value    = value
+      @value = value
       @revision = 0_i64
-      @mutex    = Sync::Mutex.new
+      @mutex = Sync::Mutex.new
     end
 
     def value : ::JSON::Any
@@ -103,7 +103,7 @@ module Delta::JSON
 
     def initialize(@tracker : Tracker, @base : ::JSON::Any, @revision : Int64)
       @writer = Writer.new(@base)
-      @ops    = Array(Op).new
+      @ops = Array(Op).new
       @status = Status::Open
     end
 

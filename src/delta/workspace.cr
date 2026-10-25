@@ -2,19 +2,19 @@
 require "./edit"
 
 class Delta::Workspace
-  @vf         = Slice(Int32).new(0)
-  @vb         = Slice(Int32).new(0)
-  @edits      = [] of Edit
+  @vf = Slice(Int32).new(0)
+  @vb = Slice(Int32).new(0)
+  @edits = [] of Edit
   @normalized = [] of Edit
-  @compacted  = [] of Edit
-  @counts_a   = Hash(Int32, Int32).new(0)
-  @counts_b   = Hash(Int32, Int32).new(0)
-  @bpos_map   = Hash(Int32, Int32).new
-  @groups     = [] of {Int32, Int32, Int32, Int32}
+  @compacted = [] of Edit
+  @counts_a = Hash(Int32, Int32).new(0)
+  @counts_b = Hash(Int32, Int32).new(0)
+  @bpos_map = Hash(Int32, Int32).new
+  @groups = [] of {Int32, Int32, Int32, Int32}
 
   def v_arrays(max : Int32) : {Slice(Int32), Slice(Int32)}
     bound = max + (max + 1) // 2
-    need  = 2 * bound + 3
+    need = 2 * bound + 3
     if @vf.size < need
       @vf = Slice(Int32).new(need, 0)
       @vb = Slice(Int32).new(need, 0)

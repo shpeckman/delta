@@ -1,8 +1,8 @@
 # bench/delta/unified_bench.cr
 require "../bench_helper"
 
-rnd     = Random.new(77)
-base    = (1..50_000).map { |i| "line #{i % 5000}" }
+rnd = Random.new(77)
+base = (1..50_000).map { |i| "line #{i % 5000}" }
 changed = base.map { |line| rnd.rand < 0.05 ? "changed #{line}" : line }
 
 old = base.join("\n") + "\n"

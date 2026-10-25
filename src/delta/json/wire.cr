@@ -2,7 +2,7 @@
 module Delta::JSON::Wire
   class Encoder
     def initialize
-      @ids  = Hash(Path, Int32).new
+      @ids = Hash(Path, Int32).new
       @next = 0
     end
 

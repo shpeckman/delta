@@ -19,9 +19,9 @@ describe Delta::JSON do
 
     pairs.each do |(before, after)|
       it "round-trips #{before} -> #{after}" do
-        base  = doc(before)
+        base = doc(before)
         value = doc(after)
-        ops   = Delta.diff_json(base, value)
+        ops = Delta.diff_json(base, value)
         Delta.apply_json(base, ops).should eq value
         base.should eq doc(before)
       end
@@ -57,7 +57,7 @@ describe Delta::JSON do
     end
 
     it "leaves the base untouched in immutable mode and shares unchanged subtrees" do
-      base   = doc(%({"a":{"b":1},"c":{"d":2}}))
+      base = doc(%({"a":{"b":1},"c":{"d":2}}))
       result = Delta::JSON.apply_immutable(base, Delta::JSON.parse_ops(%([["s",["a","b"],5]])))
       base["a"]["b"].should eq 1
       result["a"]["b"].should eq 5
@@ -67,7 +67,7 @@ describe Delta::JSON do
 
   describe Delta::JSON::Tracker do
     it "records folded ops from a draft" do
-      tracker  = Delta::JSON::Tracker.new(doc(%({"items":[],"log":""})))
+      tracker = Delta::JSON::Tracker.new(doc(%({"items":[],"log":""})))
       prepared = tracker.change do |draft|
         draft["items"].push(1, 2, 3)
         draft.append("log", "a")
@@ -81,7 +81,7 @@ describe Delta::JSON do
 
     it "rejects stale preparations" do
       tracker = Delta::JSON::Tracker.new(doc(%({"a":1})))
-      change  = tracker.begin_change
+      change = tracker.begin_change
       change.root["a"] = 2
       tracker.replace(doc(%({"a":3})))
       expect_raises(Delta::JSON::Errors::Stale) { change.prepare }
@@ -120,9 +120,9 @@ describe Delta::JSON do
     it "round-trips through the path-interning encoding" do
       encoder = Delta::JSON::Wire::Encoder.new
       decoder = Delta::JSON::Wire::Decoder.new
-      first   = Delta::JSON.parse_ops(%([["a",["log"],"x"],["s",["n"],1]]))
-      second  = Delta::JSON.parse_ops(%([["a",["log"],"y"],["r",{"fresh":true}],["s",["n"],2]]))
-      frame   = encoder.encode(second.tap { decoder.decode(encoder.encode(first)).should eq first })
+      first = Delta::JSON.parse_ops(%([["a",["log"],"x"],["s",["n"],1]]))
+      second = Delta::JSON.parse_ops(%([["a",["log"],"y"],["r",{"fresh":true}],["s",["n"],2]]))
+      frame = encoder.encode(second.tap { decoder.decode(encoder.encode(first)).should eq first })
       frame.should contain(%(["a",0,"y"]))
       decoder.decode(frame).should eq second
     end
@@ -153,7 +153,7 @@ describe Delta::JSON do
     it "wakes a blocked receiver from another fiber" do
       state = Delta::JSON::State.new(doc(%({"n":0})))
       watch = state.watch
-      done  = Channel(Delta::JSON::Frame?).new
+      done = Channel(Delta::JSON::Frame?).new
       spawn { done.send(watch.receive?) }
       Fiber.yield
       state.change { |draft| draft["n"] = 1 }

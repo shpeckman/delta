@@ -11,25 +11,25 @@ module Delta::JSON
     end
 
     getter value : ::JSON::Any
-    getter seq   : Int64
+    getter seq : Int64
 
     def initialize(@state : State, @value : ::JSON::Any, @seq : Int64, limit : Int32 = PendingOps::LIMIT)
-      @pending    = PendingOps.new(limit)
-      @latest     = @value
+      @pending = PendingOps.new(limit)
+      @latest = @value
       @latest_seq = @seq
-      @lock       = Sync::Mutex.new
-      @cond       = Sync::ConditionVariable.new(@lock)
-      @end        = nil.as(End?)
-      @error      = nil.as(Exception?)
+      @lock = Sync::Mutex.new
+      @cond = Sync::ConditionVariable.new(@lock)
+      @end = nil.as(End?)
+      @error = nil.as(Exception?)
     end
 
     def receive? : Frame?
       @lock.synchronize do
         loop do
           unless @pending.empty?
-            ops    = @pending.take(@latest)
+            ops = @pending.take(@latest)
             @value = @latest
-            @seq   = @latest_seq
+            @seq = @latest_seq
             return Frame.new(@latest, ops, @latest_seq)
           end
           return nil if @end
@@ -69,7 +69,7 @@ module Delta::JSON
       @lock.synchronize do
         return if @end
         @pending.push(ops)
-        @latest     = value
+        @latest = value
         @latest_seq = seq
         @cond.signal
       end
@@ -78,7 +78,7 @@ module Delta::JSON
     protected def finish(reason : End, error : Exception? = nil) : Nil
       @lock.synchronize do
         return if @end
-        @end   = reason
+        @end = reason
         @error = error
         @cond.broadcast
       end
@@ -88,11 +88,11 @@ module Delta::JSON
   class State
     def initialize(value : ::JSON::Any, @limit : Int32 = PendingOps::LIMIT)
       @tracker = Tracker.new(value)
-      @mutex   = Sync::Mutex.new
+      @mutex = Sync::Mutex.new
       @watches = Array(Watch).new
-      @seq     = 0_i64
-      @end     = nil.as(Watch::End?)
-      @error   = nil.as(Exception?)
+      @seq = 0_i64
+      @end = nil.as(Watch::End?)
+      @error = nil.as(Exception?)
     end
 
     def value : ::JSON::Any
@@ -161,7 +161,7 @@ module Delta::JSON
       @mutex.synchronize do
         return if @end
         yield
-        @end   = reason
+        @end = reason
         @error = error
         @watches.each &.finish(reason, error)
         @watches.clear

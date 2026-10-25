@@ -1,7 +1,7 @@
 # bench/delta/json_bench.cr
 require "../bench_helper"
 
-rnd     = Random.new(2024)
+rnd = Random.new(2024)
 records = (1..5_000).map do |i|
   {"id" => i, "name" => "record #{i}", "tags" => ["t#{i % 7}", "t#{i % 11}"], "body" => "text #{i}"}
 end
@@ -17,9 +17,9 @@ end
 inserted = Delta::JSON.copy(edited)
 inserted["records"].as_a.insert(2_500, Delta::JSON.any({"id" => 0, "name" => "inserted"}))
 
-ops     = Delta::JSON.diff(base, edited)
+ops = Delta::JSON.diff(base, edited)
 encoded = ops.to_json
-wire    = Delta::JSON::Wire::Encoder.new.encode(ops)
+wire = Delta::JSON::Wire::Encoder.new.encode(ops)
 STDOUT.puts "json doc: 5k records, 5% edited: #{ops.size} ops, #{encoded.bytesize} bytes plain, #{wire.bytesize} bytes wire"
 STDOUT.puts "json doc: 5k records, 5% edited + 1 insert: #{Delta::JSON.diff(base, inserted).size} ops"
 

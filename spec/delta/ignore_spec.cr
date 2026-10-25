@@ -42,8 +42,8 @@ describe Delta do
     end
 
     it "keeps reconstruction valid with ignore options" do
-      old   = "Foo bar\nbaz  qux\nend\n"
-      new   = "foo  bar\nbaz qux\nend\n"
+      old = "Foo bar\nbaz  qux\nend\n"
+      new = "foo  bar\nbaz qux\nend\n"
       edits = Delta.diff_lines(old, new, whitespace: Delta::Whitespace::All, ignore_case: true)
       edits.should eq [Delta::Edit.new(Delta::Edit::Kind::Equal, 0, 3, 0, 3)]
     end

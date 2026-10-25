@@ -16,7 +16,7 @@ module Delta::EditFormat
   end
 
   struct Block
-    getter search  : String
+    getter search : String
     getter replace : String
 
     def initialize(@search : String, @replace : String)
@@ -26,10 +26,10 @@ module Delta::EditFormat
   end
 
   struct FileEdit
-    getter kind    : Kind
-    getter path    : String
+    getter kind : Kind
+    getter path : String
     getter content : String?
-    getter blocks  : Array(Block)
+    getter blocks : Array(Block)
 
     def initialize(@kind : Kind, @path : String, @content : String? = nil, @blocks : Array(Block) = [] of Block)
     end
@@ -50,17 +50,17 @@ module Delta::EditFormat
   end
 
   def parse_whole(text : String, valid_files : Array(String)? = nil) : Array(FileEdit)
-    lines   = text.lines(chomp: false)
-    edits   = [] of FileEdit
-    fname   = nil.as(String?)
+    lines = text.lines(chomp: false)
+    edits = [] of FileEdit
+    fname = nil.as(String?)
     content = nil.as(Array(String)?)
-    i       = 0
+    i = 0
     while i < lines.size
       line = lines[i]
       if line.starts_with?(FENCE)
         if fname
           edits << FileEdit.new(Kind::Whole, fname, content.not_nil!.join)
-          fname   = nil
+          fname = nil
           content = nil
         else
           filename = i > 0 ? strip_filename(lines[i - 1]) : nil
@@ -72,7 +72,7 @@ module Delta::EditFormat
               raise Error.new("no filename before fence")
             end
           end
-          fname   = filename
+          fname = filename
           content = [] of String
         end
       elsif fname
@@ -85,10 +85,10 @@ module Delta::EditFormat
   end
 
   def parse_replace(text : String, valid_files : Array(String)? = nil) : Array(FileEdit)
-    lines   = text.lines(chomp: false)
-    flat    = [] of {String, Block}
+    lines = text.lines(chomp: false)
+    flat = [] of {String, Block}
     current = nil.as(String?)
-    i       = 0
+    i = 0
     while i < lines.size
       if HEAD.matches?(lines[i].strip)
         filename = find_filename(lines, i, valid_files) || current
@@ -120,7 +120,7 @@ module Delta::EditFormat
   def parse_udiff(text : String) : Array(FileEdit)
     lines = text.lines(chomp: false)
     edits = [] of FileEdit
-    i     = 0
+    i = 0
     while i < lines.size
       if lines[i].starts_with?(FENCE)
         j = i + 1
@@ -245,7 +245,7 @@ module Delta::EditFormat
   end
 
   private def dedupe_whole(edits : Array(FileEdit)) : Array(FileEdit)
-    seen   = Set(String).new
+    seen = Set(String).new
     result = [] of FileEdit
     edits.each { |e| result << e if seen.add?(e.path) }
     result
@@ -282,8 +282,8 @@ module Delta::EditFormat
 
   private def find_filename(lines : Array(String), before : Int32, valid_files : Array(String)?) : String?
     filenames = [] of String
-    i         = before - 1
-    stop      = Math.max(0, before - 3)
+    i = before - 1
+    stop = Math.max(0, before - 3)
     while i >= stop
       line = lines[i]
       if fn = strip_filename(line)
@@ -305,7 +305,7 @@ module Delta::EditFormat
 
   private def parse_udiff_block(lines : Array(String)) : Array(FileEdit)
     edits = [] of FileEdit
-    i     = 0
+    i = 0
     while i < lines.size
       if lines[i].starts_with?("--- ") && i + 1 < lines.size && lines[i + 1].starts_with?("+++ ")
         path = udiff_path(lines[i + 1], lines[i])
@@ -315,7 +315,7 @@ module Delta::EditFormat
           break if lines[i].starts_with?("--- ") && i + 1 < lines.size && lines[i + 1].starts_with?("+++ ")
           if lines[i].starts_with?("@@ ")
             before = [] of String
-            after  = [] of String
+            after = [] of String
             i += 1
             while i < lines.size
               l = lines[i]
@@ -391,8 +391,8 @@ module Delta::EditFormat
     part_lines.each { |p| leading << (p.size - p.lstrip.size) if p.strip != "" }
     replace_lines.each { |p| leading << (p.size - p.lstrip.size) if p.strip != "" }
     if !leading.empty? && leading.min != 0
-      num           = leading.min
-      part_lines    = part_lines.map { |p| p.strip != "" ? p[num..] : p }
+      num = leading.min
+      part_lines = part_lines.map { |p| p.strip != "" ? p[num..] : p }
       replace_lines = replace_lines.map { |p| p.strip != "" ? p[num..] : p }
     end
     part_len = part_lines.size
@@ -429,7 +429,7 @@ module Delta::EditFormat
   end
 
   private def try_dotdotdots(whole : String, part : String, replace : String) : String?
-    part_pieces    = dot_split(part)
+    part_pieces = dot_split(part)
     replace_pieces = dot_split(replace)
     return nil if part_pieces.size != replace_pieces.size
     return nil if part_pieces.size == 1
@@ -439,7 +439,7 @@ module Delta::EditFormat
       idx += 2
     end
     result = whole
-    idx    = 0
+    idx = 0
     while idx < part_pieces.size
       p = part_pieces[idx]
       r = replace_pieces[idx]
@@ -458,7 +458,7 @@ module Delta::EditFormat
   end
 
   private def dot_split(s : String) : Array(String)
-    pieces  = [] of String
+    pieces = [] of String
     current = ""
     s.lines(chomp: false).each do |line|
       if DOT_LINE.matches?(line)
@@ -476,7 +476,7 @@ module Delta::EditFormat
   private def count_substring(s : String, sub : String) : Int32
     return 0 if sub.empty?
     count = 0
-    idx   = 0
+    idx = 0
     while idx <= s.bytesize
       found = s.byte_index(sub, idx)
       break unless found
@@ -522,20 +522,20 @@ module Delta::EditFormat
   private def fuzzy_replace(whole_lines : Array(String), part_lines : Array(String), replace_lines : Array(String), threshold : Float64) : String?
     part_len = part_lines.size
     return nil if part_len == 0
-    min_len    = Math.max(1, (part_len * 0.9).floor.to_i)
-    max_len    = (part_len * 1.1).ceil.to_i
-    best_sim   = 0.0
+    min_len = Math.max(1, (part_len * 0.9).floor.to_i)
+    max_len = (part_len * 1.1).ceil.to_i
+    best_sim = 0.0
     best_start = -1
-    best_end   = -1
-    length     = min_len
+    best_end = -1
+    length = min_len
     while length <= max_len
       i = 0
       while i <= whole_lines.size - length
         sim = similarity(whole_lines[i, length], part_lines)
         if sim > best_sim
-          best_sim   = sim
+          best_sim = sim
           best_start = i
-          best_end   = i + length
+          best_end = i + length
         end
         i += 1
       end
@@ -547,7 +547,7 @@ module Delta::EditFormat
 
   private def similarity(a : Array(String), b : Array(String)) : Float64
     edits = Delta.diff(a, b, compact: false)
-    d     = 0
+    d = 0
     edits.each do |e|
       d += e.a_len + e.b_len unless e.kind.equal?
     end

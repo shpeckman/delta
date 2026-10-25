@@ -23,8 +23,8 @@ describe Delta do
     end
 
     it "handles CRLF line endings" do
-      old   = "a\r\nb\r\n"
-      new   = "a\r\nX\r\n"
+      old = "a\r\nb\r\n"
+      new = "a\r\nX\r\n"
       edits = Delta.diff_lines(old, new)
       la, lb = Delta::Tokenizer.lines(old, new)
       old_lines = (0...la.size).map { |i| String.new(la.line_at(i)) }
@@ -33,7 +33,7 @@ describe Delta do
     end
 
     it "round-trips random line-based diffs through all algorithms" do
-      rnd  = Random.new(99)
+      rnd = Random.new(99)
       pool = (0...30).map { |i| "line #{i}" }
       {Delta::Myers.new, Delta::Histogram.new, Delta::Patience.new}.each do |algorithm|
         50.times do

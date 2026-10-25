@@ -6,7 +6,7 @@ struct Delta::Edit
     Insert
   end
 
-  getter kind  : Kind
+  getter kind : Kind
   getter a_pos : Int32
   getter a_len : Int32
   getter b_pos : Int32
