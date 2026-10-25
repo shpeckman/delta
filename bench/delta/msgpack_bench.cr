@@ -3,11 +3,12 @@ require "../bench_helper"
 require "msgpack"
 
 rnd = Random.new(2024)
-records = (1..5_000).map do |i|
-  {
+records = Array(MessagePack::Type).new(5_000)
+(1..5_000).each do |i|
+  records << ({
     "id" => i.to_i64, "name" => "record #{i}", "tags" => ["t#{i % 7}", "t#{i % 11}"] of MessagePack::Type,
     "body" => "text #{i}",
-  } of MessagePack::Type => MessagePack::Type
+  } of MessagePack::Type => MessagePack::Type).as(MessagePack::Type)
 end
 base = {"records" => records, "log" => ""} of MessagePack::Type => MessagePack::Type
 
