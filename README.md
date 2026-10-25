@@ -227,6 +227,7 @@ crystal run --release bench/delta_bench.cr          # run full bench suite.
 crystal run --release bench/delta/diff_bench.cr     # algorithm comparison across workloads
 crystal run --release bench/delta/unified_bench.cr  # render/parse/apply throughput
 crystal run --release bench/delta/memory_bench.cr   # workspace allocation comparison
+crystal run --release bench/delta/json_bench.cr     # JSON document diff/apply/encode/track throughput
 ```
 
 Snapshot (Crystal 1.21, release mode, ThinkPad X13 i5-1240P):
