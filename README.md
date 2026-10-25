@@ -205,7 +205,30 @@ ops = Delta.diff_msgpack(base, value)      # => Array(Delta::Msgpack::Op)
 Delta.apply_msgpack(base, ops) == value    # => true; base is not mutated
 ```
 
-Op codes and paths match the JSON ops above. `Delta::Msgpack.apply_immutable` copies on write and shares unchanged subtrees; `Delta::Msgpack.apply` mutates its input in place. Ops serialize to MessagePack bytes with `Delta::Msgpack.pack_ops` and parse back with `Delta::Msgpack.unpack_ops` (or `unpack_ops(any)`). The JSON-only collaboration layer (`Tracker`/`Draft`/`State`/`Wire`) is not part of the MessagePack surface; `Delta::Msgpack` exposes `diff`, `apply_immutable`, `apply`, `copy`, `pack_ops`, `unpack_ops`, and the `Ops`/`Op` types.
+Op codes and paths match the JSON ops above. `Delta::Msgpack.apply_immutable` copies on write and shares unchanged subtrees; `Delta::Msgpack.apply` mutates its input in place. Ops serialize to MessagePack bytes with `Delta::Msgpack.pack_ops` and parse back with `Delta::Msgpack.unpack_ops` (or `unpack_ops(any)`).
+
+```crystal
+bytes = Delta::Msgpack.pack_ops(ops)
+ops   = Delta::Msgpack.unpack_ops(bytes)
+```
+
+The collaboration layer is available for MessagePack too — `Tracker`, `Draft`, `PendingOps`, `State`, and a path-interning `Wire::Encoder`/`Wire::Decoder` that packs ops to `Bytes`:
+
+```crystal
+tracker = Delta::Msgpack::Tracker.new(base)
+prepared = tracker.change do |draft|
+  draft["items"].push(1, 2, 3)
+  draft.append("log", "started")
+end
+
+state = Delta::Msgpack::State.new(base)
+watch = state.watch
+state.change { |draft| draft.append("log", "hi") }
+
+encoder = Delta::Msgpack::Wire::Encoder.new
+decoder = Delta::Msgpack::Wire::Decoder.new
+frame = decoder.decode(encoder.encode(ops))   # => Array(Delta::Msgpack::Op)
+```
 
 ## Diff stats
 
