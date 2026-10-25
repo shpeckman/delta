@@ -87,4 +87,100 @@ module Delta::Msgpack
   end
 
   Tree.define(MessagePack::Type, MessagePack::Type, Delta::Msgpack)
+
+  def self.pack_ops(ops : Array(Op)) : Bytes
+    MessagePack.pack(ops.map { |op| op_tuple(op) })
+  end
+
+  def self.unpack_ops(bytes : Bytes) : Array(Op)
+    unpack_ops(MessagePack.unpack(bytes).raw)
+  end
+
+  def self.unpack_ops(any : MessagePack::Any) : Array(Op)
+    unpack_ops(any.raw)
+  end
+
+  def self.unpack_ops(value : MessagePack::Type) : Array(Op)
+    tuples = value.as?(Array(MessagePack::Type)) || raise Errors::InvalidOp.new("batch must be an array")
+    tuples.map { |tuple| unpack_op(tuple) }
+  end
+
+  def self.unpack_op(value : MessagePack::Type) : Op
+    tuple = value.as?(Array(MessagePack::Type)) || raise Errors::InvalidOp.new("op must be an array")
+    code = tuple[0]?.try(&.as?(String)) || raise Errors::InvalidOp.new("op must start with its code")
+    if code == "r"
+      expect_arity(tuple, 2)
+      return Ops::Replace.new(tuple[1])
+    end
+    build_op(code, unpack_path(tuple[1]? || raise Errors::InvalidOp.new("op '#{code}' needs a path")), tuple)
+  end
+
+  protected def self.op_tuple(op : Op) : MessagePack::Type
+    case op
+    in Ops::Replace
+      ["r", op.value] of MessagePack::Type
+    in Ops::Set
+      ["s", op.path, op.value] of MessagePack::Type
+    in Ops::Delete
+      ["d", op.path] of MessagePack::Type
+    in Ops::Append
+      ["a", op.path, op.text] of MessagePack::Type
+    in Ops::Trim
+      ["t", op.path, op.count] of MessagePack::Type
+    in Ops::Splice
+      ["p", op.path, op.index, op.remove, op.items] of MessagePack::Type
+    in Ops::Move
+      ["m", op.path, op.permutation] of MessagePack::Type
+    end
+  end
+
+  protected def self.unpack_path(value : MessagePack::Type) : Path
+    value.as?(Array(MessagePack::Type)) || raise Errors::InvalidOp.new("path must be an array")
+  end
+
+  protected def self.build_op(code : String, path : Path, tuple : Array(MessagePack::Type)) : Op
+    case code
+    when "s"
+      expect_arity(tuple, 3)
+      Ops::Set.new(path, tuple[2])
+    when "d"
+      expect_arity(tuple, 2)
+      Ops::Delete.new(path)
+    when "a"
+      expect_arity(tuple, 3)
+      Ops::Append.new(path, tuple[2].as?(String) || raise Errors::InvalidOp.new("append text must be a string"))
+    when "t"
+      expect_arity(tuple, 3)
+      Ops::Trim.new(path, count(tuple[2]))
+    when "p"
+      expect_arity(tuple, 5)
+      items = tuple[4].as?(Array(MessagePack::Type)) || raise Errors::InvalidOp.new("splice items must be an array")
+      Ops::Splice.new(path, count(tuple[2]), count(tuple[3]), items)
+    when "m"
+      expect_arity(tuple, 3)
+      permutation = tuple[2].as?(Array(MessagePack::Type)) || raise Errors::InvalidOp.new("permutation must be an array")
+      Ops::Move.new(path, permutation.map { |entry| count(entry) })
+    else
+      raise Errors::InvalidOp.new("unknown op code: #{code}")
+    end
+  end
+
+  protected def self.expect_arity(tuple : Array(MessagePack::Type), size : Int32) : Nil
+    raise Errors::InvalidOp.new("op '#{tuple[0]}' expects #{size} elements, got #{tuple.size}") unless tuple.size == size
+  end
+
+  protected def self.count(value : MessagePack::Type) : Int32
+    case value
+    when Int8, Int16, Int32, Int64
+      number = value.to_i64
+      raise Errors::InvalidOp.new("expected a non-negative integer") unless 0 <= number <= Int32::MAX
+      number.to_i32
+    when UInt8, UInt16, UInt32, UInt64
+      number = value.to_u64
+      raise Errors::InvalidOp.new("expected a non-negative integer") unless number <= Int32::MAX
+      number.to_i32
+    else
+      raise Errors::InvalidOp.new("expected a non-negative integer")
+    end
+  end
 end

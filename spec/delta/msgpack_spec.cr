@@ -52,4 +52,16 @@ describe Delta::Msgpack do
     value = t({"a" => 2_i64} of MessagePack::Type => MessagePack::Type)
     Delta.apply_msgpack(base, Delta.diff_msgpack(base, value)).should eq value
   end
+
+  it "round trips ops through msgpack bytes" do
+    base = t({"items" => [1_i64, 2_i64, 3_i64] of MessagePack::Type, "log" => ""} of MessagePack::Type => MessagePack::Type)
+    value = t({"items" => [1_i64, 2_i64] of MessagePack::Type, "log" => "hi"} of MessagePack::Type => MessagePack::Type)
+    ops = Delta::Msgpack.diff(base, value)
+    Delta::Msgpack.unpack_ops(Delta::Msgpack.pack_ops(ops)).should eq ops
+  end
+
+  it "rejects malformed op bytes" do
+    expect_raises(Delta::Msgpack::Errors::InvalidOp) { Delta::Msgpack.unpack_ops(MessagePack.pack(1_i64)) }
+    expect_raises(Delta::Msgpack::Errors::InvalidOp) { Delta::Msgpack.unpack_ops(MessagePack.pack(["z", ["a"]] of MessagePack::Type)) }
+  end
 end
