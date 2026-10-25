@@ -22,12 +22,9 @@ delta/
       ├─╴json/
       │  ├─╴errors.cr / value.cr          # `Errors::*`; `Path`/`Segment`, value coercion (`any`, `copy`), tree adapter hooks; expands `Tree.define`.
       │  ├─╴ops.cr                        # `Ops::*` tuple serialization (`to_json`) and parsing (`parse_ops`).
-      │  ├─╴tracker.cr / draft.cr         # revisioned `Tracker`, `Change`/`Prepared` lifecycle, `Draft` path-scoped editing with op folding.
-      │  ├─╴pending_ops.cr                # coalescing op buffer with overflow-to-`Replace`.
-      │  ├─╴wire.cr                       # path-interning `Wire::Encoder`/`Decoder`.
-      │  ╰─╴state.cr                      # `State` publisher, `Watch` subscriptions, `Frame`.
-      ├─╴msgpack.cr                       # `Delta::Msgpack` tree adapter over `MessagePack::Type`; same `Ops`/`Op`/diff/apply surface via `Tree.define`; `pack_ops`/`unpack_ops` byte codec.
-      ├─╴tree.cr                          # `Tree.define` macro: shared op records, structural diff, and copy-on-write/in-place `Writer` for a node type + key type.
+      │  ╰─╴wire.cr                       # JSON path-interning `Wire::Encoder`/`Decoder`.
+      ├─╴msgpack.cr                       # `Delta::Msgpack` tree adapter over `MessagePack::Type`; `Tree.define` gives `Ops`/`Op`/diff/apply/`Tracker`/`Draft`/`PendingOps`/`State`; `pack_ops`/`unpack_ops` byte codec; path-interning `Wire` over msgpack bytes.
+      ├─╴tree.cr                          # `Tree.define` macro: shared op records, structural diff, copy-on-write/in-place `Writer`, `Tracker`/`Draft`/`PendingOps`/`State`/`Watch` collaboration layer.
       ├─╴merge.cr                         # three-way merge with conflict markers; `Merge::Result`.
       ├─╴patch.cr                         # unified diff parsing, all-or-nothing application with drift tolerance, fuzzy (`fuzz:`) apply, reverse patch, multi-file (`apply_to_dir`) apply; `Patch::Error`.
       ├─╴stat.cr                          # insertion/deletion counts.
