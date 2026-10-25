@@ -26,7 +26,7 @@ delta/
       │  ├─╴pending_ops.cr                # coalescing op buffer with overflow-to-`Replace`.
       │  ├─╴wire.cr                       # path-interning `Wire::Encoder`/`Decoder`.
       │  ╰─╴state.cr                      # `State` publisher, `Watch` subscriptions, `Frame`.
-      ├─╴msgpack.cr                       # `Delta::Msgpack` tree adapter over `MessagePack::Type`; same `Ops`/`Op`/diff/apply surface as JSON via `Tree.define`.
+      ├─╴msgpack.cr                       # `Delta::Msgpack` tree adapter over `MessagePack::Type`; same `Ops`/`Op`/diff/apply surface via `Tree.define`; `pack_ops`/`unpack_ops` byte codec.
       ├─╴tree.cr                          # `Tree.define` macro: shared op records, structural diff, and copy-on-write/in-place `Writer` for a node type + key type.
       ├─╴merge.cr                         # three-way merge with conflict markers; `Merge::Result`.
       ├─╴patch.cr                         # unified diff parsing, all-or-nothing application with drift tolerance, fuzzy (`fuzz:`) apply, reverse patch, multi-file (`apply_to_dir`) apply; `Patch::Error`.

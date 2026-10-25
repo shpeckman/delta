@@ -205,7 +205,7 @@ ops = Delta.diff_msgpack(base, value)      # => Array(Delta::Msgpack::Op)
 Delta.apply_msgpack(base, ops) == value    # => true; base is not mutated
 ```
 
-Op codes and paths match the JSON ops above. `Delta::Msgpack.apply_immutable` copies on write and shares unchanged subtrees; `Delta::Msgpack.apply` mutates its input in place. The JSON-only collaboration layer (`Tracker`/`Draft`/`State`/`Wire`) is not part of the MessagePack surface; `Delta::Msgpack` exposes `diff`, `apply_immutable`, `apply`, `copy`, and the `Ops`/`Op` types.
+Op codes and paths match the JSON ops above. `Delta::Msgpack.apply_immutable` copies on write and shares unchanged subtrees; `Delta::Msgpack.apply` mutates its input in place. Ops serialize to MessagePack bytes with `Delta::Msgpack.pack_ops` and parse back with `Delta::Msgpack.unpack_ops` (or `unpack_ops(any)`). The JSON-only collaboration layer (`Tracker`/`Draft`/`State`/`Wire`) is not part of the MessagePack surface; `Delta::Msgpack` exposes `diff`, `apply_immutable`, `apply`, `copy`, `pack_ops`, `unpack_ops`, and the `Ops`/`Op` types.
 
 ## Diff stats
 
