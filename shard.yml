@@ -12,4 +12,8 @@ description: |
   
 crystal: ">= 1.21.0"
 
+dependencies:
+  msgpack:
+    github: crystal-community/msgpack-crystal
+
 license: MIT
