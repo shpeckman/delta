@@ -146,6 +146,56 @@ Delta.render_replace(old, new, "path/file.py")     # SEARCH/REPLACE blocks
 
 `render_replace` emits one block per change group with surrounding context so every block locates its change; `render_udiff` reuses `unified_diff`. All three normalize a missing trailing newline (aider behaves the same), and `render_udiff`/`render_replace` return `""` when there is nothing to change.
 
+## JSON documents
+
+`Delta::JSON` diffs and patches `JSON::Any` trees with path-addressed ops, tracks a mutable document through revisions, and streams coalesced changes to watchers.
+
+```crystal
+ops = Delta.diff_json(base, value)        # => Array(Delta::JSON::Op)
+Delta.apply_json(base, ops) == value      # => true; base is not mutated, unchanged subtrees are shared
+```
+
+Ops serialize to compact JSON tuples (`ops.to_json`, `Delta::JSON.parse_ops`):
+
+Op | Tuple | Meaning
+---|-------|--------
+`Replace` | `["r", value]` | replace the whole document
+`Set`     | `["s", path, value]` | set a key or index (an index equal to the size appends)
+`Delete`  | `["d", path]` | remove a key or element
+`Append`  | `["a", path, text]` | append to a string
+`Trim`    | `["t", path, count]` | drop `count` characters from the start of a string
+`Splice`  | `["p", path, index, remove, items]` | array splice
+`Move`    | `["m", path, permutation]` | reorder an array (`new[i] = old[permutation[i]]`)
+
+A path is an array of string keys and integer indices. `Delta::JSON.apply_immutable` copies on write; `Delta::JSON.apply` mutates its input in place (for replicas you own). Invalid paths raise `Errors::InvalidPath`, malformed ops `Errors::InvalidOp`.
+
+Track edits through a draft; consecutive writes to the same leaf and repeated appends fold into one op:
+
+```crystal
+tracker  = Delta::JSON::Tracker.new(JSON.parse(%({"items":[],"log":""})))
+prepared = tracker.change do |draft|
+  draft["items"].push(1, 2, 3)
+  draft.append("log", "started")
+  draft["items"].sort_by { |item| -item.as_i }
+end
+prepared.ops       # ops that turn prepared.base into prepared.value
+tracker.revision   # => 1
+```
+
+`Draft` supports `[]=`, `set`, `delete`, `delete_at`, `append`, `trim`, `push`, `unshift`, `insert`, `concat`, `pop`, `shift`, `splice`, `move`, `reverse`, `sort_by`, `replace`, and `apply(ops)` (rebased onto the draft's path). For optimistic concurrency, `begin_change` / `prepare` / `adopt` split the steps; adopting a preparation from an older revision raises `Errors::Stale`.
+
+Publish to watchers with `State`. Each watcher buffers ops in a `PendingOps` that coalesces leaf writes and collapses to a single `Replace` past its limit (default 10,000 ops), so slow consumers never fall behind unboundedly:
+
+```crystal
+state = Delta::JSON::State.new(JSON.parse(%({"log":""})))
+watch = state.watch
+spawn { watch.each { |frame| send(frame.seq, frame.ops) } }   # blocks until changes arrive or the state closes
+state.change { |draft| draft.append("log", "hi") }
+state.close                                                    # or `retire` (sends a null Replace first), or `close(error)`
+```
+
+`Wire::Encoder` / `Wire::Decoder` are a stateful transport encoding that interns repeated paths as integer ids; a `Replace` resets both sides.
+
 ## Diff stats
 
 ```crystal
