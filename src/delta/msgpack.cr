@@ -272,7 +272,10 @@ module Delta::Msgpack
         id = @next
         @next += 1
         @ids[path] = id
-        [id.as(MessagePack::Type), path] of MessagePack::Type
+        definition = Array(MessagePack::Type).new(path.size + 1)
+        definition << id.as(MessagePack::Type)
+        path.each { |segment| definition << segment }
+        definition
       end
     end
 
