@@ -12,6 +12,7 @@ require "./delta/patch"
 require "./delta/edit_format"
 require "./delta/merge"
 require "./delta/words"
+require "./delta/json"
 
 module Delta
   VERSION = {{ `shards version "#{__DIR__}/.."`.chomp.stringify }}
@@ -140,6 +141,14 @@ module Delta
 
   def self.stat(old_source : String, new_source : String, algorithm : Algorithm = Myers.new) : Stat
     stat(diff_lines(old_source, new_source, algorithm))
+  end
+
+  def self.diff_json(base : ::JSON::Any, value : ::JSON::Any) : Array(JSON::Op)
+    JSON.diff(base, value)
+  end
+
+  def self.apply_json(base : ::JSON::Any, ops : Array(JSON::Op)) : ::JSON::Any
+    JSON.apply_immutable(base, ops)
   end
 
   def self.apply(a : Indexable(T), b : Indexable(T), edits : Array(Edit)) : Array(T) forall T
