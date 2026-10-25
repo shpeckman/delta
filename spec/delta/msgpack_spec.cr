@@ -62,6 +62,6 @@ describe Delta::Msgpack do
 
   it "rejects malformed op bytes" do
     expect_raises(Delta::Msgpack::Errors::InvalidOp) { Delta::Msgpack.unpack_ops(MessagePack.pack(1_i64)) }
-    expect_raises(Delta::Msgpack::Errors::InvalidOp) { Delta::Msgpack.unpack_ops(MessagePack.pack(["z", ["a"]] of MessagePack::Type)) }
+    expect_raises(Delta::Msgpack::Errors::InvalidOp) { Delta::Msgpack.unpack_ops(MessagePack.pack(["z", ["a"] of MessagePack::Type] of MessagePack::Type)) }
   end
 end
