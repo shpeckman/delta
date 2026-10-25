@@ -38,8 +38,8 @@ module Delta::Tree
         diff_hash(ah, bh, path, ops)
       elsif (aa = array?(base)) && (ba = array?(value))
         diff_array(aa, ba, path, ops)
-      elsif (as = string?(base)) && (bs = string?(value))
-        diff_string(as, bs, path, ops)
+      elsif (sa = string?(base)) && (sb = string?(value))
+        diff_string(sa, sb, path, ops)
       elsif base != value
         ops << (path.empty? ? Ops::Replace.new(value) : Ops::Set.new(path.dup, value))
       end
