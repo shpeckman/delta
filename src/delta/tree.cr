@@ -719,7 +719,9 @@ module Delta::Tree
 
       def splice(index : Int32, remove : Int32, items : Array({{node_type}}) = Array({{node_type}}).new) : Nil
         return if remove == 0 && items.empty?
-        @change.record(Ops::Splice.new(@path.dup, index, remove, items.map { |entry| {{adapter}}.copy(entry) }))
+        copied = Array({{node_type}}).new(items.size)
+        items.each { |entry| copied << {{adapter}}.copy(entry) }
+        @change.record(Ops::Splice.new(@path.dup, index, remove, copied))
       end
 
       def move(permutation : Array(Int32)) : Nil
@@ -765,7 +767,9 @@ module Delta::Tree
         in Ops::Trim
           Ops::Trim.new(prefixed(op.path), op.count)
         in Ops::Splice
-          Ops::Splice.new(prefixed(op.path), op.index, op.remove, op.items.map { |entry| {{adapter}}.copy(entry) })
+          copied = Array({{node_type}}).new(op.items.size)
+          op.items.each { |entry| copied << {{adapter}}.copy(entry) }
+          Ops::Splice.new(prefixed(op.path), op.index, op.remove, copied)
         in Ops::Move
           Ops::Move.new(prefixed(op.path), op.permutation.dup)
         end
