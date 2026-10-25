@@ -14,7 +14,7 @@ describe Delta::Msgpack do
     base = t({"t" => "ab"} of MessagePack::Type => MessagePack::Type)
     Delta::Msgpack.diff(base, t({"t" => "abcd"} of MessagePack::Type => MessagePack::Type))
       .should eq [Delta::Msgpack::Ops::Append.new(["t"] of Delta::Msgpack::Segment, "cd")] of Delta::Msgpack::Op
-    Delta::Msgpack.diff(base, t({"t" => "cd"} of MessagePack::Type => MessagePack::Type))
+    Delta::Msgpack.diff(t({"t" => "abcd"} of MessagePack::Type => MessagePack::Type), t({"t" => "cd"} of MessagePack::Type => MessagePack::Type))
       .should eq [Delta::Msgpack::Ops::Trim.new(["t"] of Delta::Msgpack::Segment, 2)] of Delta::Msgpack::Op
   end
 
