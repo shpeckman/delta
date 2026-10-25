@@ -1,6 +1,7 @@
 # src/delta/json/value.cr
+require "../tree"
+
 module Delta::JSON
-  alias Container = Hash(String, ::JSON::Any) | Array(::JSON::Any)
   alias Segment = String | Int32
   alias Path = Array(Segment)
 
@@ -68,6 +69,30 @@ module Delta::JSON
     end
   end
 
+  def self.hash?(value : ::JSON::Any) : Hash(String, ::JSON::Any)?
+    value.raw.as?(Hash(String, ::JSON::Any))
+  end
+
+  def self.array?(value : ::JSON::Any) : Array(::JSON::Any)?
+    value.raw.as?(Array(::JSON::Any))
+  end
+
+  def self.string?(value : ::JSON::Any) : String?
+    value.raw.as?(String)
+  end
+
+  def self.wrap_hash(hash : Hash(String, ::JSON::Any)) : ::JSON::Any
+    ::JSON::Any.new(hash)
+  end
+
+  def self.wrap_array(array : Array(::JSON::Any)) : ::JSON::Any
+    ::JSON::Any.new(array)
+  end
+
+  def self.wrap_string(text : String) : ::JSON::Any
+    ::JSON::Any.new(text)
+  end
+
   def self.format(path : Path) : String
     return "/" if path.empty?
     String.build do |io|
@@ -77,4 +102,6 @@ module Delta::JSON
       end
     end
   end
+
+  Tree.define(::JSON::Any, String)
 end
