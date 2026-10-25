@@ -4,7 +4,7 @@ module Delta::Unified
 
   def render(old_lines : Tokenizer::Lines, new_lines : Tokenizer::Lines, hunks : Array(Hunk),
              old_path : String?, new_path : String?) : String
-    String.build do |io|
+    String.build(capacity: estimate(old_lines, new_lines, hunks, old_path, new_path)) do |io|
       render(io, old_lines, new_lines, hunks, old_path, new_path)
     end
   end
@@ -47,5 +47,34 @@ module Delta::Unified
         io << "\\ No newline at end of file" << '\n'
       end
     end
+  end
+
+  private def estimate(old_lines : Tokenizer::Lines, new_lines : Tokenizer::Lines, hunks : Array(Hunk),
+                       old_path : String?, new_path : String?) : Int32
+    size = 0
+    if old_path && new_path
+      size += old_path.bytesize + new_path.bytesize + 12
+    end
+    hunks.each do |hunk|
+      size += 64
+      hunk.ops.each do |e|
+        case e.kind
+        when .equal? then size += measure(old_lines, e.a_pos, e.a_len)
+        when .delete? then size += measure(old_lines, e.a_pos, e.a_len)
+        when .insert? then size += measure(new_lines, e.b_pos, e.b_len)
+        end
+      end
+    end
+    size
+  end
+
+  private def measure(lines : Tokenizer::Lines, start : Int32, count : Int32) : Int32
+    size = 0
+    count.times do |i|
+      content = lines.line_at(start + i)
+      size += 1 + content.size
+      size += 27 unless content[-1] == '\n'.ord.to_u8
+    end
+    size
   end
 end
