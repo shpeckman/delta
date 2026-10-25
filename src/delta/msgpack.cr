@@ -225,4 +225,109 @@ module Delta::Msgpack
       raise Errors::InvalidOp.new("expected a non-negative integer")
     end
   end
+
+  module Wire
+    class Encoder
+      def initialize
+        @ids = Hash(Path, Int32).new
+        @next = 0
+      end
+
+      def encode(ops : Array(Op)) : Bytes
+        MessagePack.pack(ops.map { |op| encode_op(op) })
+      end
+
+      def reset : Nil
+        @ids.clear
+        @next = 0
+      end
+
+      private def encode_op(op : Op) : MessagePack::Type
+        if op.is_a?(Ops::Replace)
+          reset
+          return ["r", op.value] of MessagePack::Type
+        end
+        case op
+        in Ops::Replace
+          ["r", op.value] of MessagePack::Type
+        in Ops::Set
+          ["s", path(op.path), op.value] of MessagePack::Type
+        in Ops::Delete
+          ["d", path(op.path)] of MessagePack::Type
+        in Ops::Append
+          ["a", path(op.path), op.text] of MessagePack::Type
+        in Ops::Trim
+          ["t", path(op.path), op.count] of MessagePack::Type
+        in Ops::Splice
+          ["p", path(op.path), op.index, op.remove, op.items] of MessagePack::Type
+        in Ops::Move
+          ["m", path(op.path), op.permutation.map { |entry| entry.as(MessagePack::Type) }] of MessagePack::Type
+        end
+      end
+
+      private def path(path : Path) : MessagePack::Type
+        if id = @ids[path]?
+          return id.as(MessagePack::Type)
+        end
+        id = @next
+        @next += 1
+        @ids[path] = id
+        [id.as(MessagePack::Type), path] of MessagePack::Type
+      end
+    end
+
+    class Decoder
+      def initialize
+        @paths = Hash(Int32, Path).new
+      end
+
+      def decode(bytes : Bytes) : Array(Op)
+        decode(MessagePack.unpack(bytes).raw)
+      end
+
+      def decode(value : MessagePack::Type) : Array(Op)
+        tuples = value.as?(Array(MessagePack::Type)) || raise Errors::InvalidOp.new("wire batch must be an array")
+        tuples.map { |tuple| decode_op(tuple) }
+      end
+
+      def reset : Nil
+        @paths.clear
+      end
+
+      private def decode_op(value : MessagePack::Type) : Op
+        source = value.as?(Array(MessagePack::Type)) || raise Errors::InvalidOp.new("wire op must be an array")
+        code = source[0]?.try(&.as?(String)) || raise Errors::InvalidOp.new("wire op must start with its code")
+        if code == "r"
+          reset
+          return Ops::Replace.new(source[1])
+        end
+        reference = source[1]? || raise Errors::InvalidOp.new("wire op '#{code}' needs a path")
+        build_op(code, resolve(reference), source)
+      end
+
+      private def resolve(reference : MessagePack::Type) : Path
+        if id = integer(reference)
+          return @paths[id]? || raise Errors::InvalidOp.new("unknown path id #{id}")
+        end
+        entries = reference.as?(Array(MessagePack::Type)) || raise Errors::InvalidOp.new("wire path must be an id or a definition")
+        id = entries[0]?.try { |entry| integer(entry) } || raise Errors::InvalidOp.new("wire path definition must start with its id")
+        path = entries[1..]
+        @paths[id] = path
+        path
+      end
+
+      private def integer(value : MessagePack::Type) : Int32?
+        case value
+        when Int8, Int16, Int32, Int64
+          number = value.to_i64
+          0 <= number <= Int32::MAX ? number.to_i32 : nil
+        when UInt8, UInt16, UInt32, UInt64
+          number = value.to_u64
+          number <= Int32::MAX ? number.to_i32 : nil
+        else
+          nil
+        end
+      end
+    end
+  end
 end
