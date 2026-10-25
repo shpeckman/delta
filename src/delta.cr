@@ -13,6 +13,7 @@ require "./delta/edit_format"
 require "./delta/merge"
 require "./delta/words"
 require "./delta/json"
+require "./delta/msgpack"
 
 module Delta
   VERSION = {{ `shards version "#{__DIR__}/.."`.chomp.stringify }}
@@ -149,6 +150,14 @@ module Delta
 
   def self.apply_json(base : ::JSON::Any, ops : Array(JSON::Op)) : ::JSON::Any
     JSON.apply_immutable(base, ops)
+  end
+
+  def self.diff_msgpack(base : MessagePack::Type, value : MessagePack::Type) : Array(Msgpack::Op)
+    Msgpack.diff(base, value)
+  end
+
+  def self.apply_msgpack(base : MessagePack::Type, ops : Array(Msgpack::Op)) : MessagePack::Type
+    Msgpack.apply_immutable(base, ops)
   end
 
   def self.apply(a : Indexable(T), b : Indexable(T), edits : Array(Edit)) : Array(T) forall T
