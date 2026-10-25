@@ -143,16 +143,16 @@ module Delta::Tree
           return
         end
         parent = container(op.path, op.path.size - 1)
-        if (h = hash?(parent))
+        if (h = {{@type}}.hash?(parent))
           h[key(op.path)] = op.value
-        elsif (a = array?(parent))
+        elsif (a = {{@type}}.array?(parent))
           index = index(op.path)
           if index < a.size
             a[index] = op.value
           elsif index == a.size
             a << op.value
           else
-            raise Errors::InvalidPath.new("index #{index} past the end of #{format(op.path[0...-1])}")
+            raise Errors::InvalidPath.new("index #{index} past the end of {{@type}}.format(op.path[0...-1])")
           end
         end
       end
@@ -160,13 +160,13 @@ module Delta::Tree
       private def apply_delete(op : Ops::Delete) : Nil
         raise Errors::InvalidPath.new("cannot delete the root") if op.path.empty?
         parent = container(op.path, op.path.size - 1)
-        if (h = hash?(parent))
+        if (h = {{@type}}.hash?(parent))
           name = key(op.path)
-          raise Errors::InvalidPath.new("no key at #{format(op.path)}") unless h.has_key?(name)
+          raise Errors::InvalidPath.new("no key at {{@type}}.format(op.path)") unless h.has_key?(name)
           h.delete(name)
-        elsif (a = array?(parent))
+        elsif (a = {{@type}}.array?(parent))
           index = index(op.path)
-          raise Errors::InvalidPath.new("no element at #{format(op.path)}") unless index < a.size
+          raise Errors::InvalidPath.new("no element at {{@type}}.format(op.path)") unless index < a.size
           a.delete_at(index)
         end
       end
@@ -177,7 +177,7 @@ module Delta::Tree
 
       private def apply_trim(op : Ops::Trim) : Nil
         update_string(op.path) do |text|
-          raise Errors::InvalidOp.new("cannot trim #{op.count} characters from #{text.size} at #{format(op.path)}") if op.count > text.size
+          raise Errors::InvalidOp.new("cannot trim #{op.count} characters from #{text.size} at {{@type}}.format(op.path)") if op.count > text.size
           text[op.count..]
         end
       end
@@ -185,7 +185,7 @@ module Delta::Tree
       private def apply_splice(op : Ops::Splice) : Nil
         list = array(op.path)
         if op.index > list.size || op.index + op.remove > list.size
-          raise Errors::InvalidPath.new("splice #{op.index}+#{op.remove} outside #{list.size} elements at #{format(op.path)}")
+          raise Errors::InvalidPath.new("splice #{op.index}+#{op.remove} outside #{list.size} elements at {{@type}}.format(op.path)")
         end
         list[op.index, op.remove] = op.items
       end
@@ -193,7 +193,7 @@ module Delta::Tree
       private def apply_move(op : Ops::Move) : Nil
         list = array(op.path)
         unless op.permutation.size == list.size && op.permutation.sort == (0...list.size).to_a
-          raise Errors::InvalidOp.new("permutation does not match #{list.size} elements at #{format(op.path)}")
+          raise Errors::InvalidOp.new("permutation does not match #{list.size} elements at {{@type}}.format(op.path)")
         end
         source = list.dup
         op.permutation.each_with_index { |from, to| list[to] = source[from] }
@@ -201,25 +201,25 @@ module Delta::Tree
 
       private def update_string(path : Path, & : String -> String) : Nil
         if path.empty?
-          text = string?(@root) || raise Errors::InvalidPath.new("root is not a string")
-          @root = wrap_string(yield text)
+          text = {{@type}}.string?(@root) || raise Errors::InvalidPath.new("root is not a string")
+          @root = {{@type}}.wrap_string(yield text)
           return
         end
         parent = container(path, path.size - 1)
-        if (h = hash?(parent))
+        if (h = {{@type}}.hash?(parent))
           name = key(path)
-          text = h[name]?.try { |child| string?(child) } || raise Errors::InvalidPath.new("no string at #{format(path)}")
-          h[name] = wrap_string(yield text)
-        elsif (a = array?(parent))
+          text = h[name]?.try { |child| {{@type}}.string?(child) } || raise Errors::InvalidPath.new("no string at {{@type}}.format(path)")
+          h[name] = {{@type}}.wrap_string(yield text)
+        elsif (a = {{@type}}.array?(parent))
           index = index(path)
-          text = a[index]?.try { |child| string?(child) } || raise Errors::InvalidPath.new("no string at #{format(path)}")
-          a[index] = wrap_string(yield text)
+          text = a[index]?.try { |child| {{@type}}.string?(child) } || raise Errors::InvalidPath.new("no string at {{@type}}.format(path)")
+          a[index] = {{@type}}.wrap_string(yield text)
         end
       end
 
       private def array(path : Path) : Array({{node_type}})
         node = container(path, path.size)
-        array?(node) || raise Errors::InvalidPath.new("no array at #{format(path)}")
+        {{@type}}.array?(node) || raise Errors::InvalidPath.new("no array at {{@type}}.format(path)")
       end
 
       private def container(path : Path, depth : Int32) : {{node_type}}
@@ -227,23 +227,23 @@ module Delta::Tree
         node = @root
         depth.times do |level|
           segment = path[level]
-          child = lookup(node, segment) || raise Errors::InvalidPath.new("nothing at #{format(path[0..level])}")
+          child = lookup(node, segment) || raise Errors::InvalidPath.new("nothing at {{@type}}.format(path[0..level])")
           owned = own(child, path, level + 1)
-          store(node, segment, owned) unless identical?(child, owned)
+          store(node, segment, owned) unless {{@type}}.identical?(child, owned)
           node = owned
         end
         node
       end
 
       private def own(node : {{node_type}}, path : Path, level : Int32) : {{node_type}}
-        if (h = hash?(node))
+        if (h = {{@type}}.hash?(node))
           return node if !@shared || @owned.includes?(h.object_id)
           claim(h.dup)
-        elsif (a = array?(node))
+        elsif (a = {{@type}}.array?(node))
           return node if !@shared || @owned.includes?(a.object_id)
           claim(a.dup)
         else
-          raise Errors::InvalidPath.new("no container at #{format(path[0...level])}")
+          raise Errors::InvalidPath.new("no container at {{@type}}.format(path[0...level])")
         end
       end
 
@@ -256,36 +256,36 @@ module Delta::Tree
       private def wrap_container(copy : Container) : {{node_type}}
         case copy
         in Hash({{key_type}}, {{node_type}})
-          wrap_hash(copy)
+          {{@type}}.wrap_hash(copy)
         in Array({{node_type}})
-          wrap_array(copy)
+          {{@type}}.wrap_array(copy)
         end
       end
 
       private def lookup(node : {{node_type}}, segment : Segment) : {{node_type}}?
-        if (h = hash?(node))
+        if (h = {{@type}}.hash?(node))
           key = segment.as?({{key_type}})
           key ? h[key]? : nil
-        elsif (a = array?(node))
+        elsif (a = {{@type}}.array?(node))
           index = segment.as?(Int32)
           index ? a[index]? : nil
         end
       end
 
       private def store(node : {{node_type}}, segment : Segment, value : {{node_type}}) : Nil
-        if (h = hash?(node))
+        if (h = {{@type}}.hash?(node))
           h[segment.as({{key_type}})] = value
-        elsif (a = array?(node))
+        elsif (a = {{@type}}.array?(node))
           a[segment.as(Int32)] = value
         end
       end
 
       private def key(path : Path) : {{key_type}}
-        path.last.as?({{key_type}}) || raise Errors::InvalidPath.new("expected a key at #{format(path)}")
+        path.last.as?({{key_type}}) || raise Errors::InvalidPath.new("expected a key at {{@type}}.format(path)")
       end
 
       private def index(path : Path) : Int32
-        path.last.as?(Int32) || raise Errors::InvalidPath.new("expected an index at #{format(path)}")
+        path.last.as?(Int32) || raise Errors::InvalidPath.new("expected an index at {{@type}}.format(path)")
       end
     end
 
