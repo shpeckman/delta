@@ -25,7 +25,7 @@ module Delta::Msgpack
     String.build do |io|
       path.each do |segment|
         io << '/'
-        io << segment.inspect
+        io << segment.to_s
       end
     end
   end
