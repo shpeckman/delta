@@ -103,5 +103,5 @@ module Delta::JSON
     end
   end
 
-  Tree.define(::JSON::Any, String)
+  Tree.define(::JSON::Any, String, Delta::JSON)
 end
