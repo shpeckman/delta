@@ -1,11 +1,7 @@
 # src/delta/json/ops.cr
 module Delta::JSON
   module Ops
-    record Replace, value : ::JSON::Any do
-      def path : Path
-        Path.new
-      end
-
+    struct Replace
       def to_json(json : ::JSON::Builder) : Nil
         json.array do
           json.string "r"
@@ -14,7 +10,7 @@ module Delta::JSON
       end
     end
 
-    record Set, path : Path, value : ::JSON::Any do
+    struct Set
       def to_json(json : ::JSON::Builder) : Nil
         json.array do
           json.string "s"
@@ -24,7 +20,7 @@ module Delta::JSON
       end
     end
 
-    record Delete, path : Path do
+    struct Delete
       def to_json(json : ::JSON::Builder) : Nil
         json.array do
           json.string "d"
@@ -33,7 +29,7 @@ module Delta::JSON
       end
     end
 
-    record Append, path : Path, text : String do
+    struct Append
       def to_json(json : ::JSON::Builder) : Nil
         json.array do
           json.string "a"
@@ -43,7 +39,7 @@ module Delta::JSON
       end
     end
 
-    record Trim, path : Path, count : Int32 do
+    struct Trim
       def to_json(json : ::JSON::Builder) : Nil
         json.array do
           json.string "t"
@@ -53,7 +49,7 @@ module Delta::JSON
       end
     end
 
-    record Splice, path : Path, index : Int32, remove : Int32, items : Array(::JSON::Any) do
+    struct Splice
       def to_json(json : ::JSON::Builder) : Nil
         json.array do
           json.string "p"
@@ -65,7 +61,7 @@ module Delta::JSON
       end
     end
 
-    record Move, path : Path, permutation : Array(Int32) do
+    struct Move
       def to_json(json : ::JSON::Builder) : Nil
         json.array do
           json.string "m"
@@ -73,19 +69,6 @@ module Delta::JSON
           @permutation.to_json(json)
         end
       end
-    end
-  end
-
-  alias Op = Ops::Replace | Ops::Set | Ops::Delete | Ops::Append | Ops::Trim | Ops::Splice | Ops::Move
-
-  def self.leaf?(op : Op) : Bool
-    case op
-    when Ops::Append
-      true
-    when Ops::Set
-      !container?(op.value)
-    else
-      false
     end
   end
 
