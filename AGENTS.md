@@ -11,7 +11,7 @@ delta/
 ├─╴bench/                                 # `crystal run --release bench/delta_bench.cr` (full suite) or one of `bench/delta/{diff,unified,memory,json}_bench.cr`.
 ├─╴spec/                                  # `crystal spec`; round-trip properties hold for all three algorithms.
 ╰─╴src/
-   ├─╴delta.cr                            # entry point: requires, `VERSION`, top-level API (`Delta.diff`, `Delta.diff_lines`, `Delta.unified_diff`, `Delta.apply_patch`, `Delta.parse_patch`, `Delta.apply`, `Delta.diff_json`, `Delta.apply_json`).
+   ├─╴delta.cr                            # entry point: requires, `VERSION`, top-level API (`Delta.diff`, `Delta.diff_lines`, `Delta.unified_diff`, `Delta.apply_patch`, `Delta.parse_patch`, `Delta.apply`, `Delta.diff_json`, `Delta.apply_json`, `Delta.diff_msgpack`, `Delta.apply_msgpack`).
    ╰─╴delta/
       ├─╴algorithm.cr                     # `Algorithm` contract plus shared `emit` (merge adjacent ops) and `normalize` (delete-before-insert ordering).
       ├─╴compaction.cr                    # slides change groups to blank-line boundaries (git xdiff-style), on by default.
@@ -20,14 +20,14 @@ delta/
       ├─╴hunk.cr                          # groups edits into context-bounded hunks.
       ├─╴json.cr                          # requires the `Delta::JSON` subsystem (`Delta.diff_json`, `Delta.apply_json`); refer to stdlib as `::JSON` inside it.
       ├─╴json/
-      │  ├─╴errors.cr / value.cr          # `Errors::*`; `Path`/`Segment`, value coercion (`any`, `copy`), `format`.
-      │  ├─╴ops.cr                        # `Ops::*` records, `Op` union, tuple serialization and parsing.
-      │  ├─╴writer.cr                     # applies ops; copy-on-write (`apply_immutable`) or in place (`apply`).
+      │  ├─╴errors.cr / value.cr          # `Errors::*`; `Path`/`Segment`, value coercion (`any`, `copy`), tree adapter hooks; expands `Tree.define`.
+      │  ├─╴ops.cr                        # `Ops::*` tuple serialization (`to_json`) and parsing (`parse_ops`).
       │  ├─╴tracker.cr / draft.cr         # revisioned `Tracker`, `Change`/`Prepared` lifecycle, `Draft` path-scoped editing with op folding.
-      │  ├─╴diff.cr                       # structural diff into ops.
       │  ├─╴pending_ops.cr                # coalescing op buffer with overflow-to-`Replace`.
       │  ├─╴wire.cr                       # path-interning `Wire::Encoder`/`Decoder`.
       │  ╰─╴state.cr                      # `State` publisher, `Watch` subscriptions, `Frame`.
+      ├─╴msgpack.cr                       # `Delta::Msgpack` tree adapter over `MessagePack::Type`; same `Ops`/`Op`/diff/apply surface as JSON via `Tree.define`.
+      ├─╴tree.cr                          # `Tree.define` macro: shared op records, structural diff, and copy-on-write/in-place `Writer` for a node type + key type.
       ├─╴merge.cr                         # three-way merge with conflict markers; `Merge::Result`.
       ├─╴patch.cr                         # unified diff parsing, all-or-nothing application with drift tolerance, fuzzy (`fuzz:`) apply, reverse patch, multi-file (`apply_to_dir`) apply; `Patch::Error`.
       ├─╴stat.cr                          # insertion/deletion counts.

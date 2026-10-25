@@ -196,6 +196,17 @@ state.close                                                    # or `retire` (se
 
 `Wire::Encoder` / `Wire::Decoder` are a stateful transport encoding that interns repeated paths as integer ids; a `Replace` resets both sides.
 
+## MessagePack documents
+
+`Delta::Msgpack` provides the same path-addressed op model over `MessagePack::Type` trees (maps with any `MessagePack::Type` keys, including non-string keys):
+
+```crystal
+ops = Delta.diff_msgpack(base, value)      # => Array(Delta::Msgpack::Op)
+Delta.apply_msgpack(base, ops) == value    # => true; base is not mutated
+```
+
+Op codes and paths match the JSON ops above. `Delta::Msgpack.apply_immutable` copies on write and shares unchanged subtrees; `Delta::Msgpack.apply` mutates its input in place. The JSON-only collaboration layer (`Tracker`/`Draft`/`State`/`Wire`) is not part of the MessagePack surface; `Delta::Msgpack` exposes `diff`, `apply_immutable`, `apply`, `copy`, and the `Ops`/`Op` types.
+
 ## Diff stats
 
 ```crystal
