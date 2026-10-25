@@ -1,12 +1,12 @@
 require "../spec_helper"
 
-describe Delta::Msgpack do
-  def t(value : MessagePack::Type) : MessagePack::Type
-    value
-  end
+private def t(value : MessagePack::Type) : MessagePack::Type
+  value
+end
 
+describe Delta::Msgpack do
   it "diffs identical documents to no ops" do
-    a = t({"a" => [1_i64, {"b" => "c"}] of MessagePack::Type} of MessagePack::Type => MessagePack::Type)
+    a = t({"a" => [1_i64, {"b" => "c"} of MessagePack::Type => MessagePack::Type] of MessagePack::Type} of MessagePack::Type => MessagePack::Type)
     Delta::Msgpack.diff(a, Delta::Msgpack.copy(a)).should be_empty
   end
 
