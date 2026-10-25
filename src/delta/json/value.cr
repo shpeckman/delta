@@ -93,6 +93,10 @@ module Delta::JSON
     ::JSON::Any.new(text)
   end
 
+  def self.nil_value : ::JSON::Any
+    ::JSON::Any.new(nil)
+  end
+
   def self.format(path : Path) : String
     return "/" if path.empty?
     String.build do |io|
