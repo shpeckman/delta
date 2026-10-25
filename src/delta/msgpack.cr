@@ -3,7 +3,7 @@ require "msgpack"
 require "./tree"
 
 module Delta::Msgpack
-  alias Segment = MessagePack::Type | Int32
+  alias Segment = MessagePack::Type
   alias Path = Array(Segment)
 
   module Errors
