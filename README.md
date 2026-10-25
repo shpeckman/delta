@@ -110,7 +110,7 @@ Delta.apply_patch_to_dir(patch, "/path/to/repo", strip: 1)  # like `git apply -p
 
 `apply_patch_to_dir` handles `/dev/null` file creation and deletion, is all-or-nothing across every file, and rejects absolute paths and `..` traversal.
 
-## Aider edit formats
+## Aider-style edit formats
 
 Parse and apply the edit formats used by [aider](https://aider.chat/docs/more/edit-formats.html) — whole-file, SEARCH/REPLACE "diff", and fenced unified diff:
 
@@ -212,88 +212,6 @@ Delta.word_diff(old, new)   # "hello [-world-]{+there+}" inline markup
 ```
 
 Word tokens are maximal whitespace/non-whitespace runs, so `Delta::Words.tokens(s).join == s` — reconstruct any word diff with `Delta.apply(Delta::Words.tokens(old), Delta::Words.tokens(new), edits).join`.
-
-## Performance
-
-- All comparisons run on `Slice(Int32)` tokens — integer compares, cache-friendly.
-- Line tokenization hashes byte ranges directly from the source strings; zero per-line string allocations in the diff hot path.
-- Myers runs in linear space (divide-and-conquer middle snake) with shared flat buffers reused across recursion.
-- Unified rendering streams to `IO` in a single pass.
-
-Benchmarks (run in release mode):
-
-```console
-crystal run --release bench/delta_bench.cr          # run full bench suite.
-crystal run --release bench/delta/diff_bench.cr     # algorithm comparison across workloads
-crystal run --release bench/delta/unified_bench.cr  # render/parse/apply throughput
-crystal run --release bench/delta/memory_bench.cr   # workspace allocation comparison
-crystal run --release bench/delta/json_bench.cr     # JSON document diff/apply/encode/track throughput
-```
-
-Snapshot (Crystal 1.21, release mode, ThinkPad X13 i5-1240P):
-
-### Diff Algorithms (`bench/diff_bench.cr`)
-
-Scenario                 | Algorithm | Iterations/s | Time/op  | Variance | Memory/op | Relative
--------------------------|-----------|--------------|----------|----------|-----------|-------------
-**Small**                | Myers     | 91.30k       | 10.95µs  | ± 4.74%  | 17.3kB    | fastest
-**Small**                | Histogram | 58.26k       | 17.16µs  | ± 10.02% | 21.8kB    | 1.57× slower
-**Small**                | Patience  | 47.40k       | 21.10µs  | ± 9.44%  | 27.8kB    | 1.93× slower
-**50k lines (5% churn)** | Myers     | 31.47        | 31.78ms  | ± 2.91%  | 6.45MB    | fastest
-**50k lines (5% churn)** | Histogram | 29.86        | 33.49ms  | ± 3.14%  | 6.95MB    | 1.05× slower
-**50k lines (5% churn)** | Patience  | 29.17        | 34.28ms  | ± 2.54%  | 7.20MB    | 1.08× slower
-**Full rewrite**         | Patience  | 2.54         | 393.26ms | ± 0.95%  | 4.67MB    | fastest
-**Full rewrite**         | Myers     | 2.54         | 394.28ms | ± 0.33%  | 3.17MB    | 1.00× slower
-**Full rewrite**         | Histogram | 2.52         | 396.73ms | ± 0.47%  | 4.17MB    | 1.01× slower
-
-### Unified Patch Operations (`bench/unified_bench.cr`)
-
-*Patch size: 248,619 bytes (50k lines)*
-
-Operation              | Iterations/s | Time/op | Variance | Memory/op | Relative
------------------------|--------------|---------|----------|-----------|--------------
-**patch parse 50k**    | 359.25       | 2.78ms  | ± 5.09%  | 2.47MB    | fastest
-**patch apply 50k**    | 252.51       | 3.96ms  | ± 4.46%  | 4.38MB    | 1.42× slower
-**unified render 50k** | 18.13        | 55.14ms | ± 3.31%  | 8.07MB    | 19.81× slower
-
-### Memory Allocation (`bench/memory_bench.cr`)
-
-#### Diff Engine Allocation (Pre-tokenized, 50k lines)
-
-Algorithm     | Without Workspace | With Workspace
---------------|-------------------|---------------
-**Myers**     | 3.47 MB           | 0.0 kB
-**Histogram** | 3.97 MB           | 0.0 kB
-**Patience**  | 4.22 MB           | 0.1 kB
-
-#### Full `diff_lines` Allocation (Includes Tokenization, 50k lines)
-
-Algorithm | Without Workspace | With Workspace
-----------|-------------------|---------------
-**Myers** | 6.93 MB           | 2.74 MB
-
-### JSON Documents (`bench/json_bench.cr`)
-
-*Crystal 1.22, same machine. 5,000 records; 5% of records edited (470 ops, 18,717 bytes as tuples, 20,487 bytes on the wire)*
-
-Operation                        | Iterations/s | Time/op  | Variance | Memory/op | Relative
----------------------------------|--------------|----------|----------|-----------|---------------
-**tracker change (100 appends)** | 62.85k       | 15.91µs  | ± 4.53%  | 21.3kB    | fastest
-**tracker change (1 leaf)**      | 38.50k       | 25.97µs  | ± 6.94%  | 79.8kB    | 1.63× slower
-**diff 5k (edits + insert)**     | 30.66k       | 32.62µs  | ± 4.36%  | 77.3kB    | 2.05× slower
-**apply_immutable 5k**           | 9.34k        | 107.03µs | ± 5.84%  | 180kB     | 6.73× slower
-**to_json**                      | 8.59k        | 116.43µs | ± 14.96% | 64.8kB    | 7.32× slower
-**wire encode**                  | 7.10k        | 140.78µs | ± 4.93%  | 93.6kB    | 8.85× slower
-**parse_ops**                    | 3.94k        | 253.93µs | ± 11.48% | 236kB     | 15.96× slower
-**wire decode**                  | 3.22k        | 310.63µs | ± 3.77%  | 365kB     | 19.52× slower
-**pending_ops 10k leaf ops**     | 2.56k        | 390.72µs | ± 3.95%  | 675kB     | 24.56× slower
-**diff 5k (in place edits)**     | 407.00       | 2.46ms   | ± 5.79%  | 3.38MB    | 154.43× slower
-
-Array diffs trim the common prefix and suffix: equal-length arrays are diffed element by element, while a length change emits one `Splice` covering everything between the first and last difference (the "edits + insert" case is a single op, which is why it's fast). The wire encoding pays off only when paths repeat across batches; with all-distinct paths, as here, it's slightly larger than plain tuples.
-
-Myers (the default) and Histogram are effectively tied on typical workloads; Histogram falls back to Myers when the rarest common element is too frequent, so it no longer degrades on heavily repeated content while still producing readable diffs around unique lines. Patience anchors on unique lines and is comparable on all but the most repetitive inputs.
-
-Unified diff pipeline on a 50k-line file with 5% churn (249kB patch): render 92ms (diff + tokenize + compact + hunks + emit), parse 4.4ms, apply 6.0ms.
 
 ## Development
 

@@ -17,26 +17,38 @@ module Delta::JSON
     elsif a.is_a?(String) && b.is_a?(String)
       diff_string(a, b, path, ops)
     elsif base != value
-      ops << (path.empty? ? Ops::Replace.new(value) : Ops::Set.new(path, value))
+      ops << (path.empty? ? Ops::Replace.new(value) : Ops::Set.new(path.dup, value))
     end
   end
 
   protected def self.diff_hash(a : Hash(String, ::JSON::Any), b : Hash(String, ::JSON::Any), path : Path, ops : Array(Op)) : Nil
     a.each_key do |key|
-      ops << Ops::Delete.new(extend_path(path, key)) unless b.has_key?(key)
+      unless b.has_key?(key)
+        path << key
+        ops << Ops::Delete.new(path.dup)
+        path.pop
+      end
     end
     b.each do |key, child|
       if previous = a[key]?
-        diff_into(previous, child, extend_path(path, key), ops)
+        path << key
+        diff_into(previous, child, path, ops)
+        path.pop
       else
-        ops << Ops::Set.new(extend_path(path, key), child)
+        path << key
+        ops << Ops::Set.new(path.dup, child)
+        path.pop
       end
     end
   end
 
   protected def self.diff_array(a : Array(::JSON::Any), b : Array(::JSON::Any), path : Path, ops : Array(Op)) : Nil
     if a.size == b.size
-      a.each_with_index { |child, index| diff_into(child, b[index], extend_path(path, index), ops) }
+      a.each_with_index do |child, index|
+        path << index
+        diff_into(child, b[index], path, ops)
+        path.pop
+      end
       return
     end
     limit = Math.min(a.size, b.size)
@@ -64,12 +76,5 @@ module Delta::JSON
 
   protected def self.same_value?(a : ::JSON::Any, b : ::JSON::Any) : Bool
     identical?(a, b) || a == b
-  end
-
-  protected def self.extend_path(path : Path, segment : Segment) : Path
-    child = Path.new(path.size + 1)
-    child.concat(path)
-    child << segment
-    child
   end
 end

@@ -5,8 +5,12 @@ module Delta::Tokenizer
   extend self
 
   class Interner(T)
-    @map = Hash(T, Int32).new
+    @map : Hash(T, Int32)
     @next = 0
+
+    def initialize(initial_capacity : Int32 = 0)
+      @map = initial_capacity > 0 ? Hash(T, Int32).new(initial_capacity: initial_capacity) : Hash(T, Int32).new
+    end
 
     def token(value : T) : Int32
       if t = @map[value]?
@@ -51,7 +55,7 @@ module Delta::Tokenizer
   WHITESPACE_RUN = /\s+/
 
   def tokenize(a : Indexable(T), b : Indexable(T)) : {Slice(Int32), Slice(Int32)} forall T
-    interner = Interner(T).new
+    interner = Interner(T).new(Math.min(a.size + b.size, 8192))
     tokens_a = Slice(Int32).new(a.size) { |i| interner.token(a[i]) }
     tokens_b = Slice(Int32).new(b.size) { |i| interner.token(b[i]) }
     {tokens_a, tokens_b}
@@ -59,13 +63,16 @@ module Delta::Tokenizer
 
   def lines(old_source : String, new_source : String, *,
             whitespace : Whitespace = Whitespace::None, ignore_case : Bool = false) : {Lines, Lines}
+    offs_a = offsets(old_source)
+    offs_b = offsets(new_source)
+    capacity = Math.min(Math.max(offs_a.size, offs_b.size), 8192)
     if whitespace.none? && !ignore_case
-      interner = Interner(Bytes).new
-      {tokenize_lines(old_source, interner), tokenize_lines(new_source, interner)}
+      interner = Interner(Bytes).new(capacity)
+      {tokenize_lines(old_source, offs_a, interner), tokenize_lines(new_source, offs_b, interner)}
     else
-      interner = Interner(String).new
-      {tokenize_lines_normalized(old_source, interner, whitespace, ignore_case),
-       tokenize_lines_normalized(new_source, interner, whitespace, ignore_case)}
+      interner = Interner(String).new(capacity)
+      {tokenize_lines_normalized(old_source, offs_a, interner, whitespace, ignore_case),
+       tokenize_lines_normalized(new_source, offs_b, interner, whitespace, ignore_case)}
     end
   end
 
@@ -84,8 +91,14 @@ module Delta::Tokenizer
 
   def offsets(source : String) : Array(Int32)
     bytes = source.to_slice
-    result = [] of Int32
-    return result if bytes.empty?
+    return [] of Int32 if bytes.empty?
+    count = 1
+    i = 0
+    while i < bytes.size
+      count += 1 if bytes[i] == 0x0Au8 && i + 1 < bytes.size
+      i += 1
+    end
+    result = Array(Int32).new(count)
     result << 0
     i = 0
     while i < bytes.size
@@ -95,8 +108,7 @@ module Delta::Tokenizer
     result
   end
 
-  private def tokenize_lines(source : String, interner : Interner(Bytes)) : Lines
-    offs = offsets(source)
+  private def tokenize_lines(source : String, offs : Array(Int32), interner : Interner(Bytes)) : Lines
     bytes = source.to_slice
     blank = nil.as(Int32?)
     tokens = Slice(Int32).new(offs.size) do |i|
@@ -110,9 +122,8 @@ module Delta::Tokenizer
     Lines.new(source, offs, tokens, blank)
   end
 
-  private def tokenize_lines_normalized(source : String, interner : Interner(String),
+  private def tokenize_lines_normalized(source : String, offs : Array(Int32), interner : Interner(String),
                                         whitespace : Whitespace, ignore_case : Bool) : Lines
-    offs = offsets(source)
     bytes = source.to_slice
     blank = nil.as(Int32?)
     tokens = Slice(Int32).new(offs.size) do |i|
