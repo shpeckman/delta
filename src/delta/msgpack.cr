@@ -130,7 +130,7 @@ module Delta::Msgpack
     in Ops::Splice
       ["p", op.path, op.index, op.remove, op.items] of MessagePack::Type
     in Ops::Move
-      ["m", op.path, op.permutation] of MessagePack::Type
+      ["m", op.path, op.permutation.map { |entry| entry.as(MessagePack::Type) }] of MessagePack::Type
     end
   end
 
