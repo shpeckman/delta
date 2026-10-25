@@ -64,4 +64,41 @@ describe Delta::Msgpack do
     expect_raises(Delta::Msgpack::Errors::InvalidOp) { Delta::Msgpack.unpack_ops(MessagePack.pack(1_i64)) }
     expect_raises(Delta::Msgpack::Errors::InvalidOp) { Delta::Msgpack.unpack_ops(MessagePack.pack(["z", ["a"] of MessagePack::Type] of MessagePack::Type)) }
   end
+
+  it "tracks draft changes with folding" do
+    tracker = Delta::Msgpack::Tracker.new(t({"items" => [1_i64] of MessagePack::Type, "log" => ""} of MessagePack::Type => MessagePack::Type))
+    prepared = tracker.change do |draft|
+      draft["items"].push(2_i64, 3_i64)
+      draft.append("log", "started")
+      draft.append("log", "!")
+    end
+    Delta::Msgpack.apply_immutable(prepared.base, prepared.ops).should eq prepared.value
+    prepared.ops.size.should eq 2
+  end
+
+  it "publishes to watchers and retires" do
+    state = Delta::Msgpack::State.new(t({"log" => ""} of MessagePack::Type => MessagePack::Type))
+    watch = state.watch
+    state.change { |draft| draft.append("log", "hi") }
+    frame = watch.receive?
+    frame.should_not be_nil
+    frame.not_nil!.ops.should_not be_empty
+    state.retire
+    watch.ended.should eq Delta::Msgpack::Watch::End::Retired
+  end
+
+  it "round trips wire encoding" do
+    encoder = Delta::Msgpack::Wire::Encoder.new
+    decoder = Delta::Msgpack::Wire::Decoder.new
+    first = Delta::Msgpack.diff(
+      t({"a" => 1_i64} of MessagePack::Type => MessagePack::Type),
+      t({"a" => 2_i64} of MessagePack::Type => MessagePack::Type)
+    )
+    second = Delta::Msgpack.diff(
+      t({"a" => 2_i64} of MessagePack::Type => MessagePack::Type),
+      t({"b" => true} of MessagePack::Type => MessagePack::Type)
+    )
+    decoder.decode(encoder.encode(first)).should eq first
+    decoder.decode(encoder.encode(second)).should eq second
+  end
 end
