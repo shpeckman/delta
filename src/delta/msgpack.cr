@@ -251,21 +251,21 @@ module Delta::Msgpack
         in Ops::Replace
           ["r", op.value] of MessagePack::Type
         in Ops::Set
-          ["s", path(op.path), op.value] of MessagePack::Type
+          ["s", encode_path(op.path), op.value] of MessagePack::Type
         in Ops::Delete
-          ["d", path(op.path)] of MessagePack::Type
+          ["d", encode_path(op.path)] of MessagePack::Type
         in Ops::Append
-          ["a", path(op.path), op.text] of MessagePack::Type
+          ["a", encode_path(op.path), op.text] of MessagePack::Type
         in Ops::Trim
-          ["t", path(op.path), op.count] of MessagePack::Type
+          ["t", encode_path(op.path), op.count] of MessagePack::Type
         in Ops::Splice
-          ["p", path(op.path), op.index, op.remove, op.items] of MessagePack::Type
+          ["p", encode_path(op.path), op.index, op.remove, op.items] of MessagePack::Type
         in Ops::Move
-          ["m", path(op.path), op.permutation.map { |entry| entry.as(MessagePack::Type) }] of MessagePack::Type
+          ["m", encode_path(op.path), op.permutation.map { |entry| entry.as(MessagePack::Type) }] of MessagePack::Type
         end
       end
 
-      private def path(path : Path) : MessagePack::Type
+      private def encode_path(path : Path) : MessagePack::Type
         if id = @ids[path]?
           return id.as(MessagePack::Type)
         end
@@ -302,7 +302,7 @@ module Delta::Msgpack
           return Ops::Replace.new(source[1])
         end
         reference = source[1]? || raise Errors::InvalidOp.new("wire op '#{code}' needs a path")
-        build_op(code, resolve(reference), source)
+        Delta::Msgpack.build_op(code, resolve(reference), source)
       end
 
       private def resolve(reference : MessagePack::Type) : Path
